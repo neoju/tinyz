@@ -2,7 +2,10 @@
 	import { Maximize2, ZoomIn, ZoomOut } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 
-	let { originalUrl, compressedUrl } = $props<{ originalUrl: string; compressedUrl: string }>();
+	let { originalUrl, compressedUrl } = $props<{
+		originalUrl: string;
+		compressedUrl: string;
+	}>();
 	let position = $state(50);
 	let zoom = $state(1);
 	let panX = $state(0);
@@ -33,7 +36,10 @@
 
 	function updateSplit(clientX: number) {
 		const bounds = slider.getBoundingClientRect();
-		position = Math.min(100, Math.max(0, ((clientX - bounds.left) / bounds.width) * 100));
+		position = Math.min(
+			100,
+			Math.max(0, ((clientX - bounds.left) / bounds.width) * 100)
+		);
 	}
 
 	function startSplit(event: PointerEvent) {
@@ -57,7 +63,8 @@
 		if (!gesture) return;
 		pendingPointerX = event.clientX;
 		pendingPointerY = event.clientY;
-		if (animationFrame === undefined) animationFrame = requestAnimationFrame(applyPointerMove);
+		if (animationFrame === undefined)
+			animationFrame = requestAnimationFrame(applyPointerMove);
 	}
 
 	function applyPointerMove() {
@@ -69,8 +76,14 @@
 		}
 		const maxX = (slider.clientWidth * (zoom - 1)) / 2;
 		const maxY = (slider.clientHeight * (zoom - 1)) / 2;
-		panX = Math.min(maxX, Math.max(-maxX, panX + pendingPointerX - lastPointerX));
-		panY = Math.min(maxY, Math.max(-maxY, panY + pendingPointerY - lastPointerY));
+		panX = Math.min(
+			maxX,
+			Math.max(-maxX, panX + pendingPointerX - lastPointerX)
+		);
+		panY = Math.min(
+			maxY,
+			Math.max(-maxY, panY + pendingPointerY - lastPointerY)
+		);
 		lastPointerX = pendingPointerX;
 		lastPointerY = pendingPointerY;
 	}
@@ -95,8 +108,15 @@
 	style={`--split: ${position}%; --zoom: ${zoom}; --pan-x: ${panX}px; --pan-y: ${panY}px`}
 	onpointerdown={startPan}
 >
-	<img class="base" src={compressedUrl} alt="Compressed preview" draggable="false" />
-	<div class="clipped"><img src={originalUrl} alt="Original preview" draggable="false" /></div>
+	<img
+		class="base"
+		src={compressedUrl}
+		alt="Compressed preview"
+		draggable="false"
+	/>
+	<div class="clipped">
+		<img src={originalUrl} alt="Original preview" draggable="false" />
+	</div>
 	<button
 		class="handle"
 		type="button"
@@ -124,7 +144,8 @@
 			aria-label="Zoom out"
 			title="Zoom out"
 			disabled={zoom <= 1}
-			onclick={() => changeZoom(-0.25)}><ZoomOut size={15} strokeWidth={1.5} /></button
+			onclick={() => changeZoom(-0.25)}
+			><ZoomOut size={15} strokeWidth={1.5} /></button
 		>
 		<span>{Math.round(zoom * 100)}%</span>
 		<button
@@ -132,7 +153,8 @@
 			aria-label="Zoom in"
 			title="Zoom in"
 			disabled={zoom >= 10}
-			onclick={() => changeZoom(0.25)}><ZoomIn size={15} strokeWidth={1.5} /></button
+			onclick={() => changeZoom(0.25)}
+			><ZoomIn size={15} strokeWidth={1.5} /></button
 		>
 	</div>
 	<button
@@ -151,7 +173,8 @@
 		container-type: inline-size;
 		aspect-ratio: 16 / 9;
 		overflow: hidden;
-		background: repeating-conic-gradient(#e2e0d8 0% 25%, #ebe9e2 0% 50%) 50% / 20px 20px;
+		background: repeating-conic-gradient(#e2e0d8 0% 25%, #ebe9e2 0% 50%) 50% /
+			20px 20px;
 		touch-action: none;
 		user-select: none;
 	}

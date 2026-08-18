@@ -24,9 +24,13 @@
 	let batchStartedAt = 0;
 	let bulkTimeMs = $state<number | undefined>();
 
-	const selected = $derived(items.find((item) => item.id === selectedId) ?? items[0]);
+	const selected = $derived(
+		items.find((item) => item.id === selectedId) ?? items[0]
+	);
 	const busy = $derived(
-		items.some((item) => item.status === 'compressing' || item.status === 'queued')
+		items.some(
+			(item) => item.status === 'compressing' || item.status === 'queued'
+		)
 	);
 
 	function handleWorkerMessage(
@@ -57,12 +61,18 @@
 				...item,
 				compressedBytes: bytes.byteLength,
 				compressionMs: event.data.compressionMs,
-				compressedUrl: URL.createObjectURL(new Blob([bytes], { type: mimeType(format) })),
+				compressedUrl: URL.createObjectURL(
+					new Blob([bytes], { type: mimeType(format) })
+				),
 				outputName,
 				status: 'done'
 			};
 		} else if (event.data.type === 'error') {
-			items[index] = { ...items[index], status: 'error', error: event.data.message };
+			items[index] = {
+				...items[index],
+				status: 'error',
+				error: event.data.message
+			};
 		}
 		activeBatchIds.delete(event.data.id);
 		if (!activeBatchIds.size && batchStartedAt) {
@@ -73,7 +83,10 @@
 	}
 
 	onMount(() => {
-		const workerCount = Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 2) - 1));
+		const workerCount = Math.min(
+			4,
+			Math.max(1, (navigator.hardwareConcurrency || 2) - 1)
+		);
 		workers = Array.from({ length: workerCount }, () => new CompressorWorker());
 		for (const worker of workers) worker.onmessage = handleWorkerMessage;
 
@@ -109,7 +122,9 @@
 		file.arrayBuffer().then((input) => {
 			const worker = workers[nextWorker % workers.length];
 			nextWorker += 1;
-			worker?.postMessage({ type: 'compress', id, input, quality, format }, [input]);
+			worker?.postMessage({ type: 'compress', id, input, quality, format }, [
+				input
+			]);
 		});
 	}
 
@@ -185,7 +200,9 @@
 
 	async function downloadAll() {
 		const ready = items.filter(
-			(item): item is ImageResult & { compressedUrl: string; outputName: string } =>
+			(
+				item
+			): item is ImageResult & { compressedUrl: string; outputName: string } =>
 				Boolean(item.compressedUrl && item.outputName)
 		);
 		if (!ready.length) return;
@@ -195,7 +212,8 @@
 			await Promise.all(
 				ready.map(async (item, index) => {
 					const response = await fetch(item.compressedUrl);
-					if (!response.ok) throw new Error(`Could not read ${item.outputName}`);
+					if (!response.ok)
+						throw new Error(`Could not read ${item.outputName}`);
 					let filename = item.outputName;
 					if (entries[filename]) filename = `${index + 1}-${filename}`;
 					entries[filename] = new Uint8Array(await response.arrayBuffer());
@@ -203,7 +221,9 @@
 			);
 
 			const archive = zipSync(entries);
-			const url = URL.createObjectURL(new Blob([archive], { type: 'application/zip' }));
+			const url = URL.createObjectURL(
+				new Blob([archive], { type: 'application/zip' })
+			);
 			const link = document.createElement('a');
 			link.href = url;
 			link.download = `tinyz-${format}.zip`;
@@ -212,14 +232,20 @@
 			link.remove();
 			setTimeout(() => URL.revokeObjectURL(url), 0);
 		} catch (cause) {
-			error = cause instanceof Error ? cause.message : 'Could not create ZIP archive.';
+			error =
+				cause instanceof Error
+					? cause.message
+					: 'Could not create ZIP archive.';
 		}
 	}
 </script>
 
 <svelte:head>
 	<title>tinyz | Private image compression</title>
-	<meta name="description" content="Compress multiple images locally in your browser." />
+	<meta
+		name="description"
+		content="Compress multiple images locally in your browser."
+	/>
 </svelte:head>
 
 <main class="shell">
@@ -227,14 +253,16 @@
 		<a class="brand" href={resolve('/')} aria-label="tinyz home">
 			<span class="brand-mark">tz</span> tinyz
 		</a>
-		<span class="privacy"><span class="status-dot"></span> local-first compression</span>
+		<span class="privacy"
+			><span class="status-dot"></span> local-first compression</span
+		>
 	</nav>
 	<section class="hero">
 		<p class="eyebrow">WASM image compressor</p>
 		<h1>Make images lighter.<br /><em>Keep them yours.</em></h1>
 		<p class="intro">
-			Drop a batch of images. tinyz compresses them in a background thread, so your files never
-			leave this device.
+			Drop a batch of images. tinyz compresses them in a background thread, so
+			your files never leave this device.
 		</p>
 	</section>
 	<DropZone {busy} onFiles={chooseFiles} />
@@ -274,7 +302,10 @@
 				<span>01 / Your images</span>
 				{#if selected.compressedBytes}
 					<strong>
-						{reductionPercent(selected.originalBytes, selected.compressedBytes)}% smaller
+						{reductionPercent(
+							selected.originalBytes,
+							selected.compressedBytes
+						)}% smaller
 					</strong>
 				{/if}
 			</div>
@@ -286,7 +317,9 @@
 				/>
 			{:else}
 				<div class="waiting aspect-video w-full px-6">
-					<p class="w-full overflow-hidden text-center text-nowrap text-ellipsis">
+					<p
+						class="w-full overflow-hidden text-center text-nowrap text-ellipsis"
+					>
 						Compressing {selected.name}...
 					</p>
 				</div>
@@ -320,7 +353,11 @@
 		</div>
 	{/if}
 
-	<footer><span>tinyz / 2026</span><span>Powered by Rust + imagequant + WebAssembly</span></footer>
+	<footer>
+		<span>tinyz / 2026</span><span
+			>Powered by Rust + imagequant + WebAssembly</span
+		>
+	</footer>
 </main>
 
 <style>

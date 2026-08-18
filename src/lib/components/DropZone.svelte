@@ -1,5 +1,8 @@
 <script lang="ts">
-	let { busy, onFiles } = $props<{ busy: boolean; onFiles: (files: FileList | File[]) => void }>();
+	let { busy, onFiles } = $props<{
+		busy: boolean;
+		onFiles: (files: FileList | File[]) => void;
+	}>();
 	let dragging = $state(false);
 </script>
 
@@ -22,7 +25,8 @@
 		type="file"
 		accept="image/png,image/jpeg,image/webp"
 		multiple
-		onchange={(event) => onFiles((event.currentTarget as HTMLInputElement).files ?? [])}
+		onchange={(event) =>
+			onFiles((event.currentTarget as HTMLInputElement).files ?? [])}
 	/>
 	<div class="drop-icon">+</div>
 	<h2>{busy ? 'Compressing in the background...' : 'Drop images here'}</h2>

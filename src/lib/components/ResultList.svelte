@@ -30,7 +30,9 @@
 	}
 
 	function formatMilliseconds(milliseconds: number) {
-		return milliseconds < 1000 ? `${milliseconds} ms` : `${(milliseconds / 1000).toFixed(2)} s`;
+		return milliseconds < 1000
+			? `${milliseconds} ms`
+			: `${(milliseconds / 1000).toFixed(2)} s`;
 	}
 </script>
 
@@ -51,7 +53,8 @@
 			disabled={busy}
 			onclick={onClear}
 		>
-			<Trash2 size={14} strokeWidth={1.5} aria-hidden="true" /><span>clear</span>
+			<Trash2 size={14} strokeWidth={1.5} aria-hidden="true" /><span>clear</span
+			>
 		</button>
 
 		<button
@@ -62,7 +65,9 @@
 			title="Download all as ZIP"
 			disabled={busy || !items.some((item: ImageResult) => item.compressedUrl)}
 		>
-			<Download size={14} strokeWidth={1.5} aria-hidden="true" /><span>download all as zip</span>
+			<Download size={14} strokeWidth={1.5} aria-hidden="true" /><span
+				>download all as zip</span
+			>
 		</button>
 	</div>
 
@@ -79,9 +84,8 @@
 						if (event.key === 'Enter' || event.key === ' ') onSelect(item.id);
 					}}
 				>
-					<span class="row-number">{String(item.id + 1).padStart(2, '0')}</span><span
-						class="row-name">{item.name}</span
-					><span class="row-status"
+					<span class="row-number">{String(item.id + 1).padStart(2, '0')}</span
+					><span class="row-name">{item.name}</span><span class="row-status"
 						>{item.status === 'done' && item.compressedBytes !== undefined
 							? `${formatKilobytes(item.compressedBytes)} / ${item.compressionMs ? formatMilliseconds(item.compressionMs) : '--'}`
 							: item.status}</span
@@ -95,7 +99,12 @@
 							onclick={(event) => {
 								event.stopPropagation();
 								onDownload(item);
-							}}><Download size={14} strokeWidth={1.5} aria-hidden="true" /></button
+							}}
+							><Download
+								size={14}
+								strokeWidth={1.5}
+								aria-hidden="true"
+							/></button
 						>{/if}
 				</div>
 			{/each}

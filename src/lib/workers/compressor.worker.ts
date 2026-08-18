@@ -1,4 +1,6 @@
-import init, { compress_image_with_metadata } from '$lib/wasm/wasm_compressor.js';
+import init, {
+	compress_image_with_metadata
+} from '$lib/wasm/wasm_compressor.js';
 import type { OutputFormat } from '$lib/types';
 
 type CompressMessage = {
@@ -11,10 +13,18 @@ type CompressMessage = {
 type WorkerMessage =
 	| { type: 'ready' }
 	| { type: 'started'; format: OutputFormat }
-	| { type: 'result'; bytes: ArrayBuffer; compressionMs: number; format: OutputFormat }
+	| {
+			type: 'result';
+			bytes: ArrayBuffer;
+			compressionMs: number;
+			format: OutputFormat;
+	  }
 	| { type: 'error'; message: string; format: OutputFormat };
 type WorkerScope = {
-	postMessage: (message: WorkerMessage & { id?: number }, transfer?: Transferable[]) => void;
+	postMessage: (
+		message: WorkerMessage & { id?: number },
+		transfer?: Transferable[]
+	) => void;
 	onmessage: ((event: MessageEvent<CompressMessage>) => void) | null;
 };
 
@@ -27,7 +37,11 @@ workerScope.onmessage = (event: MessageEvent<CompressMessage>) => {
 	if (event.data.type !== 'compress') return;
 	queue = queue.then(async () => {
 		try {
-			workerScope.postMessage({ type: 'started', id: event.data.id, format: event.data.format });
+			workerScope.postMessage({
+				type: 'started',
+				id: event.data.id,
+				format: event.data.format
+			});
 			await wasmReady;
 			const input =
 				event.data.input instanceof ArrayBuffer

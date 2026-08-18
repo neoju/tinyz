@@ -12,10 +12,10 @@ export default defineConfig(
 	includeIgnoreFile(gitignorePath),
 	{ ignores: ['src/lib/wasm/**', 'wasm-compressor/target/**'] },
 	js.configs.recommended,
-	ts.configs.recommended,
-	svelte.configs.recommended,
+	...ts.configs.recommended,
+	svelte.configs['flat/recommended'],
+	svelte.configs['flat/prettier'],
 	prettier,
-	svelte.configs.prettier,
 	{
 		languageOptions: { globals: { ...globals.browser, ...globals.node } },
 		rules: {
