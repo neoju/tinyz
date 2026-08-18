@@ -1,0 +1,15 @@
+{
+  "name": "wasm-compressor",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "wasm_compressor_bg.wasm",
+    "wasm_compressor.js",
+    "wasm_compressor.d.ts"
+  ],
+  "main": "wasm_compressor.js",
+  "types": "wasm_compressor.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
