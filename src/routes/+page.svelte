@@ -6,8 +6,8 @@
 	import ComparisonSlider from '$lib/components/ComparisonSlider.svelte';
 	import DropZone from '$lib/components/DropZone.svelte';
 	import ResultList from '$lib/components/ResultList.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import type { ImageResult, OutputFormat } from '$lib/types';
+	import { formatBytes, mimeType, reductionPercent } from '$lib/utils';
 	import CompressorWorker from '$lib/workers/compressor.worker?worker';
 
 	let workers: Worker[] = [];
@@ -98,20 +98,6 @@
 			}
 		};
 	});
-
-	function mimeType(value: OutputFormat) {
-		return value === 'jpeg' ? 'image/jpeg' : `image/${value}`;
-	}
-
-	function formatBytes(bytes: number) {
-		if (bytes < 1024) return `${bytes} B`;
-		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-		return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-	}
-
-	function reductionPercent(originalBytes: number, compressedBytes: number) {
-		return Math.max(0, Math.round((1 - compressedBytes / originalBytes) * 100));
-	}
 
 	function compress(id: number, file: File) {
 		const queuedIndex = items.findIndex((item) => item.id === id);

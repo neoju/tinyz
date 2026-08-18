@@ -2,7 +2,7 @@
 	import { Download, Trash2 } from 'lucide-svelte';
 	import type { ImageResult, OutputFormat } from '$lib/types';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { formatKilobytes, formatMilliseconds } from '$lib/utils';
 	let {
 		items,
 		format,
@@ -24,16 +24,6 @@
 		onDownloadAll: () => void;
 		onClear: () => void;
 	}>();
-
-	function formatKilobytes(bytes: number) {
-		return `${(bytes / 1024).toFixed(1)} KB`;
-	}
-
-	function formatMilliseconds(milliseconds: number) {
-		return milliseconds < 1000
-			? `${milliseconds} ms`
-			: `${(milliseconds / 1000).toFixed(2)} s`;
-	}
 </script>
 
 <section class="results">
