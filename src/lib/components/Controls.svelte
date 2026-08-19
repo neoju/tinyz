@@ -50,7 +50,7 @@
 		id="quality"
 		type="range"
 		min="10"
-		max="100"
+		max="99"
 		value={quality}
 		disabled={busy}
 		oninput={handleQualityInput}
