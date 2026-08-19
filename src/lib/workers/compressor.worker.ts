@@ -1,6 +1,4 @@
-import init, {
-	compress_image_with_metadata
-} from '$lib/wasm/wasm_compressor.js';
+import init, { compress_image_with_metadata } from '$lib/wasm/wasm_compressor.js';
 import type { OutputFormat } from '$lib/types';
 
 type CompressMessage = {
@@ -23,10 +21,7 @@ type WorkerMessage =
 	| { type: 'error'; message: string; format: OutputFormat };
 
 type WorkerScope = {
-	postMessage: (
-		message: WorkerMessage & { id?: number },
-		transfer?: Transferable[]
-	) => void;
+	postMessage: (message: WorkerMessage & { id?: number }, transfer?: Transferable[]) => void;
 	onmessage: ((event: MessageEvent<CompressMessage>) => void) | null;
 };
 

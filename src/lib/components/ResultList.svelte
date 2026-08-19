@@ -32,9 +32,7 @@
 		}
 
 		const size = formatKilobytes(item.compressedBytes);
-		const time = item.compressionMs
-			? formatMilliseconds(item.compressionMs)
-			: '--';
+		const time = item.compressionMs ? formatMilliseconds(item.compressionMs) : '--';
 
 		return `${size} / ${time}`;
 	}
