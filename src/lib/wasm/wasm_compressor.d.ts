@@ -19,11 +19,6 @@ export function compress_image(input_bytes: Uint8Array, quality: number, format:
  */
 export function compress_image_with_metadata(input_bytes: Uint8Array, quality: number, format: string): CompressionResult;
 
-/**
- * Keeps the original public API for PNG callers.
- */
-export function compress_png(input_bytes: Uint8Array, quality: number): Uint8Array;
-
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
@@ -31,7 +26,6 @@ export interface InitOutput {
     readonly __wbg_compressionresult_free: (a: number, b: number) => void;
     readonly compress_image: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly compress_image_with_metadata: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-    readonly compress_png: (a: number, b: number, c: number, d: number) => void;
     readonly compressionresult_bytes: (a: number, b: number) => void;
     readonly compressionresult_compression_ms: (a: number) => number;
     readonly __wbindgen_add_to_stack_pointer: (a: number) => number;

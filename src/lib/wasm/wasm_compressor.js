@@ -99,33 +99,6 @@ export function compress_image_with_metadata(input_bytes, quality, format) {
         wasm.__wbindgen_add_to_stack_pointer(16);
     }
 }
-
-/**
- * Keeps the original public API for PNG callers.
- * @param {Uint8Array} input_bytes
- * @param {number} quality
- * @returns {Uint8Array}
- */
-export function compress_png(input_bytes, quality) {
-    try {
-        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        const ptr0 = passArray8ToWasm0(input_bytes, wasm.__wbindgen_export);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.compress_png(retptr, ptr0, len0, quality);
-        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-        if (r3) {
-            throw takeObject(r2);
-        }
-        var v2 = getArrayU8FromWasm0(r0, r1).slice();
-        wasm.__wbindgen_export3(r0, r1 * 1, 1);
-        return v2;
-    } finally {
-        wasm.__wbindgen_add_to_stack_pointer(16);
-    }
-}
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,

@@ -4,7 +4,6 @@ export const memory: WebAssembly.Memory;
 export const __wbg_compressionresult_free: (a: number, b: number) => void;
 export const compress_image: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
 export const compress_image_with_metadata: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-export const compress_png: (a: number, b: number, c: number, d: number) => void;
 export const compressionresult_bytes: (a: number, b: number) => void;
 export const compressionresult_compression_ms: (a: number) => number;
 export const __wbindgen_add_to_stack_pointer: (a: number) => number;

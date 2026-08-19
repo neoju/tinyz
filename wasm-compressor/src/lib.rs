@@ -21,12 +21,6 @@ impl CompressionResult {
     }
 }
 
-/// Keeps the original public API for PNG callers.
-#[wasm_bindgen]
-pub fn compress_png(input_bytes: &[u8], quality: u8) -> Result<Vec<u8>, JsValue> {
-    compress_image(input_bytes, quality, "png")
-}
-
 /// Decode, quantize, and encode an image as png, jpeg, or webp.
 #[wasm_bindgen]
 pub fn compress_image(input_bytes: &[u8], quality: u8, format: &str) -> Result<Vec<u8>, JsValue> {
