@@ -109,6 +109,7 @@
 <div
 	bind:this={slider}
 	class:grabbing={gesture === 'pan'}
+	class:split-grabbing={gesture === 'split'}
 	class="slider"
 	role="application"
 	aria-label="Image comparison preview. Drag the image when zoomed to pan."
@@ -131,9 +132,7 @@
 		aria-valuenow={position}
 		onpointerdown={startSplit}
 		onkeydown={handlePositionKeydown}
-	>
-		<span></span>
-	</button>
+	></button>
 
 	<div class="tag original">original</div>
 	<div class="tag compressed">compressed</div>
@@ -227,37 +226,19 @@
 		);
 		border: 0;
 		padding: 0;
-		cursor: ew-resize;
+		cursor:
+			url('/tz-cursor.svg') 12 12,
+			ew-resize;
 		pointer-events: none;
 	}
 	.handle {
 		pointer-events: auto;
 	}
-	.handle span {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		width: 28px;
-		height: 28px;
-		border: 1px solid #1c1d1b;
-		border-radius: 50%;
-		background: #c6f04a;
-		transform: translate(-50%, -50%);
-	}
-	.handle span::before,
-	.handle span::after {
-		position: absolute;
-		top: 12px;
-		width: 5px;
-		height: 1px;
-		background: #1c1d1b;
-		content: '';
-	}
-	.handle span::before {
-		left: 6px;
-	}
-	.handle span::after {
-		right: 6px;
+	.slider.split-grabbing,
+	.slider.split-grabbing * {
+		cursor:
+			url('/tz-cursor.svg') 12 12,
+			ew-resize !important;
 	}
 	.slider.grabbing {
 		cursor: grabbing;
@@ -297,13 +278,14 @@
 	.view-controls {
 		position: absolute;
 		right: 50px;
-		bottom: 11px;
+		bottom: 12px;
 		z-index: 3;
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		padding: 4px;
+		padding: 2px;
 		background: rgba(28, 29, 27, 0.75);
+		border: 1px solid rgba(244, 241, 235, 0.7);
 		color: #f4f1eb;
 		font-size: 9px;
 	}
@@ -327,13 +309,6 @@
 	.view-controls span {
 		min-width: 34px;
 		text-align: center;
-	}
-	.slider:fullscreen {
-		width: 100vw;
-		height: 100vh;
-		max-width: none;
-		aspect-ratio: auto;
-		background: #1c1d1b;
 	}
 	@media (max-width: 650px) {
 		.slider {
