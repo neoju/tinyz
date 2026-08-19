@@ -1,6 +1,18 @@
 <script lang="ts">
 	import { Download, Trash2 } from 'lucide-svelte';
 	import type { ImageResult, OutputFormat } from '$lib/types';
+	import {
+		AlertDialog,
+		AlertDialogAction,
+		AlertDialogCancel,
+		AlertDialogContent,
+		AlertDialogDescription,
+		AlertDialogFooter,
+		AlertDialogHeader,
+		AlertDialogTitle,
+		AlertDialogTrigger
+	} from '$lib/components/ui/alert-dialog/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { formatKilobytes, formatMilliseconds } from '$lib/utils';
 
@@ -58,28 +70,48 @@
 			{/if}
 		</span>
 
-		<button
-			class="clear"
-			type="button"
-			aria-label="Clear output queue"
-			title="Clear output queue"
-			disabled={busy}
-			onclick={onClear}
-		>
-			<Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
-			<span>clear</span>
-		</button>
+		<div class="actions">
+			<AlertDialog>
+				<AlertDialogTrigger>
+					{#snippet child({ props })}
+						<Button
+							{...props}
+							variant="ghost"
+							size="icon-sm"
+							aria-label="Clear output queue"
+							title="Clear output queue"
+							disabled={busy}
+						>
+							<Trash2 aria-hidden="true" />
+						</Button>
+					{/snippet}
+				</AlertDialogTrigger>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Clear output queue?</AlertDialogTitle>
+						<AlertDialogDescription>
+							This removes all processed images and previews from this session. This cannot be
+							undone.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onclick={onClear}>Clear</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
-		<button
-			class="download-all"
-			onclick={onDownloadAll}
-			aria-label="Download all images as ZIP"
-			title="Download all as ZIP"
-			disabled={busy || !items.some((item: ImageResult) => item.compressedUrl)}
-		>
-			<Download size={14} strokeWidth={1.5} aria-hidden="true" />
-			<span>download all as zip</span>
-		</button>
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				aria-label="Download all images as ZIP"
+				title="Download all as ZIP"
+				disabled={busy || !items.some((item: ImageResult) => item.compressedUrl)}
+				onclick={onDownloadAll}
+			>
+				<Download aria-hidden="true" />
+			</Button>
+		</div>
 	</div>
 
 	<div class="list">
@@ -116,7 +148,7 @@
 
 <style>
 	.results {
-		margin-top: 65px;
+		margin-top: 35px;
 	}
 	.section-heading {
 		display: flex;
@@ -127,19 +159,10 @@
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 	}
-	.section-heading button {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		border: 0;
-		background: none;
-		color: #596a1f;
-		font: inherit;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		cursor: pointer;
+	.actions {
+		display: flex;
+		gap: 8px;
 	}
-	:global(.section-heading svg),
 	:global(.row-download svg) {
 		width: 14px;
 		height: 14px;
@@ -148,18 +171,6 @@
 		stroke-linecap: round;
 		stroke-linejoin: round;
 		stroke-width: 1.5;
-	}
-	.section-heading .clear {
-		margin-left: auto;
-		color: #888a82;
-	}
-	.section-heading button:disabled {
-		color: #aeb1a7;
-		cursor: default;
-	}
-	.section-heading button:not(.clear) span {
-		margin-left: 14px;
-		color: #798d2e;
 	}
 	.section-heading small {
 		margin-left: 10px;
@@ -228,14 +239,10 @@
 		margin-top: 12px;
 		font-size: 9px;
 	}
-	.section-heading button,
 	.row-download {
 		cursor: pointer;
 	}
 	@media (max-width: 650px) {
-		.results {
-			margin-top: 36px;
-		}
 		.row {
 			grid-template-columns: 24px minmax(0, 1fr) 92px 28px;
 			gap: 6px;
@@ -258,31 +265,6 @@
 		.section-heading small {
 			margin-left: 5px;
 			white-space: nowrap;
-		}
-		.section-heading button {
-			min-height: 32px;
-			padding: 6px 8px;
-			border: 1px solid #c7c8c0;
-			font-size: 9px;
-			white-space: nowrap;
-		}
-		.section-heading .clear {
-			min-width: 64px;
-		}
-		.section-heading .download-all {
-			justify-content: center;
-		}
-		:global(.section-heading button svg) {
-			width: 16px;
-			height: 16px;
-		}
-		.download-all span {
-			font-size: 0;
-			margin-left: 0;
-		}
-		.download-all span::after {
-			content: 'ZIP';
-			font-size: 9px;
 		}
 	}
 </style>

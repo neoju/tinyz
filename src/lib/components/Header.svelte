@@ -2,18 +2,23 @@
 	import { resolve } from '$app/paths';
 </script>
 
-<nav class="nav">
-	<a class="brand" href={resolve('/')} aria-label="tinyz home">
-		<span class="brand-mark">tz</span> tinyz
-	</a>
-	<span class="privacy">
-		<span class="status-dot"></span> local-first compression
-	</span>
-</nav>
+<header class="flex w-full justify-center border-b border-dashed">
+	<nav class="nav border-dashed md:border-x">
+		<a class="brand" href={resolve('/')} aria-label="tinyz home">
+			<span class="brand-mark">tz</span> tinyz
+		</a>
+		<span class="privacy">
+			<span class="status-dot"></span> local-first compression
+		</span>
+	</nav>
+</header>
 
 <style>
 	.nav {
 		display: flex;
+		max-width: 1100px;
+		width: 100%;
+		padding: 20px 34px;
 		align-items: center;
 		justify-content: space-between;
 		font-size: 11px;

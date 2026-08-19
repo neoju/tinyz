@@ -40,7 +40,7 @@
 
 <style>
 	.comparison {
-		margin-top: 65px;
+		margin-top: 35px;
 	}
 	.section-heading {
 		display: flex;
@@ -70,9 +70,6 @@
 		font-size: 10px;
 	}
 	@media (max-width: 650px) {
-		.comparison {
-			margin-top: 32px;
-		}
 		.waiting {
 			height: 220px;
 		}

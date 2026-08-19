@@ -1,47 +1,49 @@
 <script lang="ts">
 	import type { OutputFormat } from '$lib/types';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import {
+		Select,
+		SelectContent,
+		SelectItem,
+		SelectTrigger,
+		SelectValue
+	} from '$lib/components/ui/select/index.js';
+	import { RefreshCcw } from 'lucide-svelte';
 
 	let {
+		ref = $bindable(null),
 		quality,
 		format,
 		busy,
 		settingsDirty,
 		hasItems,
-		recompressRef,
 		onqualityinput,
 		onqualitychange,
 		onformatchange,
 		onrecompress
 	} = $props<{
+		ref?: HTMLElement | null;
 		quality: number;
 		format: OutputFormat;
 		busy: boolean;
 		settingsDirty: boolean;
 		hasItems: boolean;
-		recompressRef: (el: HTMLButtonElement | null) => void;
 		onqualityinput: (value: number) => void;
 		onqualitychange: () => void;
 		onformatchange: (value: OutputFormat) => void;
 		onrecompress: () => void;
 	}>();
 
-	let recompressButton: HTMLButtonElement;
-
-	$effect(() => {
-		recompressRef(recompressButton);
-		return () => recompressRef(null);
-	});
-
 	function handleQualityInput(event: Event) {
 		onqualityinput(Number((event.currentTarget as HTMLInputElement).value));
 	}
 
-	function handleFormatChange(event: Event) {
-		onformatchange((event.currentTarget as HTMLSelectElement).value as OutputFormat);
+	function handleFormatChange(value: string) {
+		onformatchange(value as OutputFormat);
 	}
 </script>
 
-<div class="controls">
+<div class="controls" bind:this={ref}>
 	<label for="quality">Quality <strong>{quality}</strong></label>
 	<input
 		id="quality"
@@ -54,18 +56,25 @@
 		onchange={onqualitychange}
 	/>
 	<label for="format">Output</label>
-	<select id="format" value={format} onchange={handleFormatChange}>
-		<option value="png">PNG</option>
-		<option value="jpeg">JPEG</option>
-		<option value="webp">WebP</option>
-	</select>
-	<button
-		bind:this={recompressButton}
-		class="recompress"
-		type="button"
+	<Select value={format} type="single" onValueChange={handleFormatChange}>
+		<SelectTrigger id="format" size="sm" aria-label="Output format" disabled={busy}>
+			<SelectValue />
+		</SelectTrigger>
+		<SelectContent>
+			<SelectItem value="png">PNG</SelectItem>
+			<SelectItem value="jpeg">JPEG</SelectItem>
+			<SelectItem value="webp">WebP</SelectItem>
+		</SelectContent>
+	</Select>
+	<Button
+		size="sm"
+		variant="outline"
 		disabled={!settingsDirty || busy || !hasItems}
-		onclick={onrecompress}>Re-compress <span>-></span></button
+		onclick={onrecompress}
 	>
+		<span class="hidden md:inline-block">Re-compress</span>
+		<RefreshCcw />
+	</Button>
 </div>
 
 <style>
@@ -80,6 +89,7 @@
 		font-size: 10px;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
+		scroll-margin-top: 10px;
 	}
 	.controls strong {
 		color: #252621;
@@ -88,34 +98,9 @@
 	.controls input {
 		accent-color: #798d2e;
 	}
-	.controls select {
-		padding: 6px 25px 6px 8px;
-		border: 1px solid #b9bbb1;
-		background: transparent;
-		color: #373832;
-		font: inherit;
-	}
-	.recompress {
-		scroll-margin-top: 10px;
-		padding: 7px 10px;
-		border: 1px solid #798d2e;
-		background: #798d2e;
-		color: #f4f1eb;
-		font: inherit;
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		cursor: pointer;
-	}
-	.recompress span {
+	:global(.recompress-arrow) {
 		margin-left: 8px;
 		color: #c6f04a;
-	}
-	.recompress:disabled {
-		border-color: #c7c8c0;
-		background: transparent;
-		color: #aeb1a7;
-		cursor: default;
 	}
 	@media (max-width: 650px) {
 		.controls {
@@ -127,14 +112,6 @@
 		}
 		.controls input {
 			min-width: 70px;
-		}
-		.controls select {
-			padding: 6px 8px;
-		}
-		.recompress {
-			padding: 7px 8px;
-			font-size: 9px;
-			white-space: nowrap;
 		}
 	}
 </style>

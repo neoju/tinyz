@@ -10,7 +10,7 @@
 <style>
 	.hero {
 		max-width: 700px;
-		margin: 105px 0 48px;
+		margin: 85px 0 48px;
 	}
 	.eyebrow {
 		color: #7b7e76;

@@ -1,3 +1,24 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@theme inline {
+	--color-background: #f4f1eb;
+	--color-foreground: #1c1d1b;
+	--color-muted: #e8e5de;
+	--color-muted-foreground: #7b7e76;
+	--color-border: #d4d3ca;
+	--color-input: #b9bbb1;
+	--color-primary: #798d2e;
+	--color-primary-foreground: #f4f1eb;
+	--color-secondary: #e8e5de;
+	--color-secondary-foreground: #252621;
+	--color-destructive: #a34d3e;
+	--color-popover: #fbfaf7;
+	--color-popover-foreground: #1c1d1b;
+	--color-ring: #a8b77a;
+}
+
+* {
+	border-color: #aeb1a7;
+}

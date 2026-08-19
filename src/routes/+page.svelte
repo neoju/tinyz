@@ -21,7 +21,7 @@
 
 	let workers: Worker[] = [];
 	let nextWorker = 0;
-	let recompressButton: HTMLButtonElement | null;
+	let controlsRef = $state<HTMLElement | null>(null);
 	let items = $state<ImageResult[]>([]);
 	let selectedId = $state(0);
 	let quality = $state(80);
@@ -37,8 +37,7 @@
 	const busy = $derived(items.some((item) => ['compressing', 'queued'].includes(item.status)));
 
 	function handleWorkerMessage(event: MessageEvent<WorkerResponseMessage>) {
-		if (event.data.id === undefined || (event.data.format && event.data.format !== format))
-			return;
+		if (event.data.id === undefined || (event.data.format && event.data.format !== format)) return;
 
 		const index = items.findIndex((item) => item.id === event.data.id);
 		if (index < 0) return;
@@ -148,7 +147,7 @@
 
 	function scrollToRecompress() {
 		requestAnimationFrame(() => {
-			recompressButton?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			controlsRef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		});
 	}
 
@@ -206,18 +205,18 @@
 	<meta name="description" content="Compress multiple images locally in your browser." />
 </svelte:head>
 
-<main class="shell">
-	<Header />
+<Header />
+<main class="shell border-dashed md:border-x">
 	<Hero />
 	<DropZone {busy} onFiles={chooseFiles} />
 
 	<Controls
+		bind:ref={controlsRef}
 		{quality}
 		{format}
 		{busy}
 		{settingsDirty}
 		hasItems={items.length > 0}
-		recompressRef={(el) => (recompressButton = el)}
 		onqualityinput={(value) => (quality = value)}
 		onqualitychange={markSettingsDirty}
 		onformatchange={changeFormat}
@@ -246,9 +245,8 @@
 			<span>i</span> Your images are processed locally. Nothing is uploaded or stored.
 		</div>
 	{/if}
-
-	<Footer />
 </main>
+<Footer />
 
 <style>
 	:global(body) {
@@ -256,15 +254,19 @@
 		background: #f4f1eb;
 		color: #1c1d1b;
 		font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+		min-height: 100dvh;
+		display: flex;
+		flex-direction: column;
 	}
 	:global(*) {
 		box-sizing: border-box;
 	}
 	.shell {
+		flex-grow: 1;
 		max-width: 1100px;
+		width: 100%;
 		margin: 0 auto;
 		padding: 28px 34px 24px;
-		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
 	}
