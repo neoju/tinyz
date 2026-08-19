@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { OutputFormat } from '$lib/types';
+	import { formatLabel } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		Select,
@@ -57,10 +58,16 @@
 	/>
 	<label for="format">Output</label>
 	<Select value={format} type="single" onValueChange={handleFormatChange}>
-		<SelectTrigger id="format" size="sm" aria-label="Output format" disabled={busy}>
-			<SelectValue />
+		<SelectTrigger
+			id="format"
+			class="hover:cursor-pointer"
+			size="sm"
+			aria-label="Output format"
+			disabled={busy}
+		>
+			<SelectValue>{formatLabel(format)}</SelectValue>
 		</SelectTrigger>
-		<SelectContent>
+		<SelectContent class="hover:**:cursor-pointer">
 			<SelectItem value="png">PNG</SelectItem>
 			<SelectItem value="jpeg">JPEG</SelectItem>
 			<SelectItem value="webp">WebP</SelectItem>
@@ -69,6 +76,7 @@
 	<Button
 		size="sm"
 		variant="outline"
+		class="hover:cursor-pointer"
 		disabled={!settingsDirty || busy || !hasItems}
 		onclick={onrecompress}
 	>

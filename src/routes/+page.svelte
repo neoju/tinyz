@@ -17,7 +17,7 @@
 		ReadyImageResult,
 		WorkerResponseMessage
 	} from '$lib/types';
-	import { downloadZip, filterAcceptedImages, mimeType, triggerDownload } from '$lib/utils';
+	import { downloadZip, extensionToFormat, filterAcceptedImages, formatToExtension, mimeType, triggerDownload } from '$lib/utils';
 
 	let workers: Worker[] = [];
 	let nextWorker = 0;
@@ -52,7 +52,7 @@
 			if (item.compressedUrl) URL.revokeObjectURL(item.compressedUrl);
 
 			const bytes = new Uint8Array(event.data.bytes);
-			const extension: string = format === 'jpeg' ? 'jpg' : format;
+			const extension = formatToExtension(format);
 
 			items[index] = {
 				...item,
@@ -113,6 +113,12 @@
 		error = '';
 
 		const wasEmpty = items.length === 0;
+		if (wasEmpty) {
+			const ext = accepted[0].name.split('.').pop() ?? '';
+			const detected = extensionToFormat(ext);
+			if (detected) format = detected;
+		}
+
 		const next = accepted.map((file, offset) => {
 			const id = items.length + offset;
 			files.set(id, file);

@@ -76,7 +76,8 @@
 					{#snippet child({ props })}
 						<Button
 							{...props}
-							variant="ghost"
+							class="hover:cursor-pointer"
+							variant="destructive"
 							size="icon-sm"
 							aria-label="Clear output queue"
 							title="Clear output queue"
@@ -102,14 +103,15 @@
 			</AlertDialog>
 
 			<Button
-				variant="ghost"
-				size="icon-sm"
+				variant="outline"
+				size="sm"
+				class="hover:cursor-pointer"
 				aria-label="Download all images as ZIP"
 				title="Download all as ZIP"
 				disabled={busy || !items.some((item: ImageResult) => item.compressedUrl)}
 				onclick={onDownloadAll}
 			>
-				<Download aria-hidden="true" />
+				ZIP <Download aria-hidden="true" />
 			</Button>
 		</div>
 	</div>

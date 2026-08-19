@@ -7,11 +7,33 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+const FORMATS = {
+	png: { ext: 'png', label: 'PNG', mime: 'image/png' },
+	jpeg: { ext: 'jpg', label: 'JPEG', mime: 'image/jpeg' },
+	webp: { ext: 'webp', label: 'WebP', mime: 'image/webp' }
+} as const;
+
+const EXT_TO_FORMAT = Object.fromEntries(
+	Object.entries(FORMATS).map(([fmt, { ext }]) => [ext, fmt as OutputFormat])
+) as Record<string, OutputFormat>;
+
+export const ACCEPTED_IMAGE_TYPES: string[] = Object.values(FORMATS).map((f) => f.mime);
+
 export function mimeType(format: OutputFormat) {
-	return format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
+	return FORMATS[format].mime;
 }
 
-const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+export function formatToExtension(format: OutputFormat) {
+	return FORMATS[format].ext;
+}
+
+export function formatLabel(format: OutputFormat) {
+	return FORMATS[format].label;
+}
+
+export function extensionToFormat(ext: string): OutputFormat | undefined {
+	return EXT_TO_FORMAT[ext.toLowerCase()];
+}
 
 export function filterAcceptedImages(files: ArrayLike<File>) {
 	return Array.from(files).filter((file) => ACCEPTED_IMAGE_TYPES.includes(file.type));

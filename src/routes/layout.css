@@ -22,3 +22,12 @@
 * {
 	border-color: #aeb1a7;
 }
+
+*::-webkit-scrollbar {
+	display: none;
+}
+
+* {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
