@@ -3,6 +3,7 @@
 	import type { ImageResult, OutputFormat } from '$lib/types';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { formatKilobytes, formatMilliseconds } from '$lib/utils';
+
 	let {
 		items,
 		format,
@@ -24,12 +25,36 @@
 		onDownloadAll: () => void;
 		onClear: () => void;
 	}>();
+
+	function getStatusText(item: ImageResult): string {
+		if (item.status !== 'done' || item.compressedBytes === undefined) {
+			return item.status;
+		}
+
+		const size = formatKilobytes(item.compressedBytes);
+		const time = item.compressionMs
+			? formatMilliseconds(item.compressionMs)
+			: '--';
+
+		return `${size} / ${time}`;
+	}
+
+	function handleDownload(event: MouseEvent, item: ImageResult): void {
+		event.stopPropagation();
+		onDownload(item);
+	}
+
+	function handleRowKeydown(event: KeyboardEvent, id: number): void {
+		if (event.key === 'Enter' || event.key === ' ') {
+			onSelect(id);
+		}
+	}
 </script>
 
 <section class="results">
 	<div class="section-heading">
-		<span
-			>02 / output queue
+		<span>
+			02 / output queue
 			{#if bulkTimeMs}
 				<small>{formatMilliseconds(bulkTimeMs)} total</small>
 			{/if}
@@ -43,21 +68,19 @@
 			disabled={busy}
 			onclick={onClear}
 		>
-			<Trash2 size={14} strokeWidth={1.5} aria-hidden="true" /><span>clear</span
-			>
+			<Trash2 size={14} strokeWidth={1.5} aria-hidden="true" />
+			<span>clear</span>
 		</button>
 
 		<button
-			size="sm"
 			class="download-all"
 			onclick={onDownloadAll}
 			aria-label="Download all images as ZIP"
 			title="Download all as ZIP"
 			disabled={busy || !items.some((item: ImageResult) => item.compressedUrl)}
 		>
-			<Download size={14} strokeWidth={1.5} aria-hidden="true" /><span
-				>download all as zip</span
-			>
+			<Download size={14} strokeWidth={1.5} aria-hidden="true" />
+			<span>download all as zip</span>
 		</button>
 	</div>
 
@@ -70,32 +93,22 @@
 					role="button"
 					tabindex="0"
 					onclick={() => onSelect(item.id)}
-					onkeydown={(event) => {
-						if (event.key === 'Enter' || event.key === ' ') onSelect(item.id);
-					}}
+					onkeydown={(event) => handleRowKeydown(event, item.id)}
 				>
-					<span class="row-number">{String(item.id + 1).padStart(2, '0')}</span
-					><span class="row-name">{item.name}</span><span class="row-status"
-						>{item.status === 'done' && item.compressedBytes !== undefined
-							? `${formatKilobytes(item.compressedBytes)} / ${item.compressionMs ? formatMilliseconds(item.compressionMs) : '--'}`
-							: item.status}</span
-					>
-					{#if item.compressedUrl}<button
-							size="icon-sm"
+					<span class="row-number">{String(item.id + 1).padStart(2, '0')}</span>
+					<span class="row-name">{item.name}</span>
+					<span class="row-status">{getStatusText(item)}</span>
+					{#if item.compressedUrl}
+						<button
 							class="row-download"
 							type="button"
 							aria-label={`Download ${item.outputName}`}
 							title={`Download ${item.outputName}`}
-							onclick={(event) => {
-								event.stopPropagation();
-								onDownload(item);
-							}}
-							><Download
-								size={14}
-								strokeWidth={1.5}
-								aria-hidden="true"
-							/></button
-						>{/if}
+							onclick={(event) => handleDownload(event, item)}
+						>
+							<Download size={14} strokeWidth={1.5} aria-hidden="true" />
+						</button>
+					{/if}
 				</div>
 			{/each}
 		</ScrollArea>

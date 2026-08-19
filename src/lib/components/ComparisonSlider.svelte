@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Maximize2, ZoomIn, ZoomOut } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
 
 	let { originalUrl, compressedUrl } = $props<{
 		originalUrl: string;
 		compressedUrl: string;
 	}>();
+
 	let position = $state(50);
 	let zoom = $state(1);
 	let panX = $state(0);
@@ -24,18 +24,22 @@
 	}
 
 	function changeZoom(amount: number) {
+		if (!slider) return;
+
 		zoom = Math.min(10, Math.max(1, Number((zoom + amount).toFixed(2))));
-		slider?.style.setProperty('--zoom', String(zoom));
+		slider.style.setProperty('--zoom', String(zoom));
+
 		if (zoom === 1) {
 			panX = 0;
 			panY = 0;
-			slider?.style.setProperty('--pan-x', '0px');
-			slider?.style.setProperty('--pan-y', '0px');
+			slider.style.setProperty('--pan-x', '0px');
+			slider.style.setProperty('--pan-y', '0px');
 		}
 	}
 
 	function updateSplit(clientX: number) {
 		const bounds = slider.getBoundingClientRect();
+
 		position = Math.min(
 			100,
 			Math.max(0, ((clientX - bounds.left) / bounds.width) * 100)
@@ -47,12 +51,14 @@
 		event.stopPropagation();
 		gesture = 'split';
 		slider.setPointerCapture(event.pointerId);
+
 		updateSplit(event.clientX);
 	}
 
 	function startPan(event: PointerEvent) {
 		if (zoom === 1 || event.button !== 0) return;
 		event.preventDefault();
+
 		gesture = 'pan';
 		slider.setPointerCapture(event.pointerId);
 		lastPointerX = event.clientX;
@@ -61,21 +67,26 @@
 
 	function movePointer(event: PointerEvent) {
 		if (!gesture) return;
+
 		pendingPointerX = event.clientX;
 		pendingPointerY = event.clientY;
+
 		if (animationFrame === undefined)
 			animationFrame = requestAnimationFrame(applyPointerMove);
 	}
 
 	function applyPointerMove() {
 		animationFrame = undefined;
+
 		if (!gesture) return;
 		if (gesture === 'split') {
 			updateSplit(pendingPointerX);
 			return;
 		}
+
 		const maxX = (slider.clientWidth * (zoom - 1)) / 2;
 		const maxY = (slider.clientHeight * (zoom - 1)) / 2;
+
 		panX = Math.min(
 			maxX,
 			Math.max(-maxX, panX + pendingPointerX - lastPointerX)
@@ -90,10 +101,16 @@
 
 	function endPointer() {
 		gesture = null;
+
 		if (animationFrame !== undefined) {
 			cancelAnimationFrame(animationFrame);
 			animationFrame = undefined;
 		}
+	}
+
+	function handlePositionKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowLeft') position = Math.max(0, position - 1);
+		if (event.key === 'ArrowRight') position = Math.min(100, position + 1);
 	}
 </script>
 
@@ -114,9 +131,11 @@
 		alt="Compressed preview"
 		draggable="false"
 	/>
+
 	<div class="clipped">
 		<img src={originalUrl} alt="Original preview" draggable="false" />
 	</div>
+
 	<button
 		class="handle"
 		type="button"
@@ -126,11 +145,11 @@
 		aria-valuemax="100"
 		aria-valuenow={position}
 		onpointerdown={startSplit}
-		onkeydown={(event) => {
-			if (event.key === 'ArrowLeft') position = Math.max(0, position - 1);
-			if (event.key === 'ArrowRight') position = Math.min(100, position + 1);
-		}}><span></span></button
+		onkeydown={handlePositionKeydown}
 	>
+		<span></span>
+	</button>
+
 	<div class="tag original">original</div>
 	<div class="tag compressed">compressed</div>
 	<div
@@ -145,26 +164,33 @@
 			title="Zoom out"
 			disabled={zoom <= 1}
 			onclick={() => changeZoom(-0.25)}
-			><ZoomOut size={15} strokeWidth={1.5} /></button
 		>
+			<ZoomOut size={15} strokeWidth={1.5} />
+		</button>
+
 		<span>{Math.round(zoom * 100)}%</span>
+
 		<button
 			type="button"
 			aria-label="Zoom in"
 			title="Zoom in"
 			disabled={zoom >= 10}
 			onclick={() => changeZoom(0.25)}
-			><ZoomIn size={15} strokeWidth={1.5} /></button
 		>
+			<ZoomIn size={15} strokeWidth={1.5} />
+		</button>
 	</div>
+
 	<button
 		class="fullscreen"
 		type="button"
 		aria-label="View preview fullscreen"
 		title="View fullscreen"
 		onpointerdown={(event) => event.stopPropagation()}
-		onclick={toggleFullscreen}><Maximize2 size={16} strokeWidth={1.5} /></button
+		onclick={toggleFullscreen}
 	>
+		<Maximize2 size={16} strokeWidth={1.5} />
+	</button>
 </div>
 
 <style>

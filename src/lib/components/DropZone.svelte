@@ -4,29 +4,40 @@
 		onFiles: (files: FileList | File[]) => void;
 	}>();
 	let dragging = $state(false);
+
+	function handleDragOver(event: DragEvent): void {
+		event.preventDefault();
+		dragging = true;
+	}
+
+	function handleDragLeave(): void {
+		dragging = false;
+	}
+
+	function handleDrop(event: DragEvent): void {
+		event.preventDefault();
+		dragging = false;
+		onFiles(event.dataTransfer?.files ?? []);
+	}
+
+	function handleFileChange(event: Event): void {
+		onFiles((event.currentTarget as HTMLInputElement).files ?? []);
+	}
 </script>
 
 <label
 	aria-label="Image upload"
 	class:dragging
 	class="drop-zone cursor-pointer"
-	ondragover={(event) => {
-		event.preventDefault();
-		dragging = true;
-	}}
-	ondragleave={() => (dragging = false)}
-	ondrop={(event) => {
-		event.preventDefault();
-		dragging = false;
-		onFiles(event.dataTransfer?.files ?? []);
-	}}
+	ondragover={handleDragOver}
+	ondragleave={handleDragLeave}
+	ondrop={handleDrop}
 >
 	<input
 		type="file"
 		accept="image/png,image/jpeg,image/webp"
 		multiple
-		onchange={(event) =>
-			onFiles((event.currentTarget as HTMLInputElement).files ?? [])}
+		onchange={handleFileChange}
 	/>
 	<div class="drop-icon">+</div>
 	<h2>{busy ? 'Compressing in the background...' : 'Drop images here'}</h2>

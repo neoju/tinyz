@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 	import { zipSync } from 'fflate';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import ComparisonSlider from '$lib/components/ComparisonSlider.svelte';
 	import DropZone from '$lib/components/DropZone.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import ResultList from '$lib/components/ResultList.svelte';
 	import type { ImageResult, OutputFormat } from '$lib/types';
 	import { formatBytes, mimeType, reductionPercent } from '$lib/utils';
@@ -56,7 +57,9 @@
 			const item = items[index];
 			if (item.compressedUrl) URL.revokeObjectURL(item.compressedUrl);
 			const bytes = new Uint8Array(event.data.bytes);
-			const outputName = `${item.name.replace(/\.[^.]+$/, '')}-tiny.${format === 'jpeg' ? 'jpg' : format}`;
+			let extension: string = format;
+			if (format === 'jpeg') extension = 'jpg';
+			const outputName = `${item.name.replace(/\.[^.]+$/, '')}-tiny.${extension}`;
 			items[index] = {
 				...item,
 				compressedBytes: bytes.byteLength,
@@ -124,7 +127,7 @@
 		}
 	}
 
-	async function chooseFiles(input: FileList | File[]) {
+	function chooseFiles(input: FileList | File[]) {
 		const accepted = Array.from(input).filter((file) =>
 			['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
 		);
@@ -148,14 +151,31 @@
 		items = [...items, ...next];
 		if (wasEmpty) selectedId = next[0].id;
 		startBatch(next);
-		requestAnimationFrame(() =>
-			recompressButton?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-		);
+		scrollToRecompress();
 	}
 
 	function changeFormat(event: Event) {
 		format = (event.currentTarget as HTMLSelectElement).value as OutputFormat;
 		settingsDirty = true;
+	}
+
+	function markSettingsDirty() {
+		settingsDirty = true;
+	}
+
+	function selectItem(id: number) {
+		selectedId = id;
+	}
+
+	function scrollToRecompress() {
+		requestAnimationFrame(() => {
+			recompressButton?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
+	}
+
+	function getCompressedSize(item: ImageResult): string {
+		if (item.compressedBytes === undefined) return '--';
+		return formatBytes(item.compressedBytes);
 	}
 
 	function recompressAll() {
@@ -198,8 +218,9 @@
 			await Promise.all(
 				ready.map(async (item, index) => {
 					const response = await fetch(item.compressedUrl);
-					if (!response.ok)
+					if (!response.ok) {
 						throw new Error(`Could not read ${item.outputName}`);
+					}
 					let filename = item.outputName;
 					if (entries[filename]) filename = `${index + 1}-${filename}`;
 					entries[filename] = new Uint8Array(await response.arrayBuffer());
@@ -218,10 +239,11 @@
 			link.remove();
 			setTimeout(() => URL.revokeObjectURL(url), 0);
 		} catch (cause) {
-			error =
-				cause instanceof Error
-					? cause.message
-					: 'Could not create ZIP archive.';
+			if (cause instanceof Error) {
+				error = cause.message;
+				return;
+			}
+			error = 'Could not create ZIP archive.';
 		}
 	}
 </script>
@@ -235,14 +257,8 @@
 </svelte:head>
 
 <main class="shell">
-	<nav class="nav">
-		<a class="brand" href={resolve('/')} aria-label="tinyz home">
-			<span class="brand-mark">tz</span> tinyz
-		</a>
-		<span class="privacy"
-			><span class="status-dot"></span> local-first compression</span
-		>
-	</nav>
+	<Header />
+
 	<section class="hero">
 		<p class="eyebrow">WASM image compressor</p>
 		<h1>Make images lighter.<br /><em>Keep them yours.</em></h1>
@@ -262,7 +278,7 @@
 			max="100"
 			bind:value={quality}
 			disabled={busy}
-			onchange={() => (settingsDirty = true)}
+			onchange={markSettingsDirty}
 		/>
 		<label for="format">Output</label>
 		<select id="format" value={format} onchange={changeFormat}>
@@ -271,8 +287,6 @@
 			<option value="webp">WebP</option>
 		</select>
 		<button
-			variant="default"
-			size="sm"
 			bind:this={recompressButton}
 			class="recompress"
 			type="button"
@@ -313,14 +327,15 @@
 
 			<div class="preview-meta">
 				<span>{selected.name}</span>
-				<span>
-					{formatBytes(selected.originalBytes)} -> {selected.compressedBytes
-						? formatBytes(selected.compressedBytes)
-						: '--'}
-				</span>
+				<span
+					>{formatBytes(selected.originalBytes)} -> {getCompressedSize(
+						selected
+					)}</span
+				>
 			</div>
 		</section>
 	{/if}
+
 	{#if items.length}
 		<ResultList
 			{items}
@@ -328,7 +343,7 @@
 			{selectedId}
 			{bulkTimeMs}
 			{busy}
-			onSelect={(id) => (selectedId = id)}
+			onSelect={selectItem}
 			onDownload={download}
 			onDownloadAll={downloadAll}
 			onClear={clearQueue}
@@ -339,11 +354,7 @@
 		</div>
 	{/if}
 
-	<footer>
-		<span>tinyz / 2026</span><span
-			>Powered by Rust + imagequant + WebAssembly</span
-		>
-	</footer>
+	<Footer />
 </main>
 
 <style>
@@ -363,45 +374,6 @@
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
-	}
-	.nav {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		font-size: 11px;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-	}
-	.brand {
-		color: inherit;
-		font-size: 17px;
-		font-weight: 700;
-		letter-spacing: -0.08em;
-		text-decoration: none;
-		text-transform: lowercase;
-	}
-	.brand-mark {
-		display: inline-grid;
-		width: 26px;
-		height: 26px;
-		margin-right: 7px;
-		place-items: center;
-		border-radius: 50%;
-		background: #c6f04a;
-		color: #242b19;
-		font-size: 12px;
-		letter-spacing: -0.15em;
-	}
-	.privacy {
-		color: #70736c;
-	}
-	.status-dot {
-		display: inline-block;
-		width: 6px;
-		height: 6px;
-		margin-right: 7px;
-		border-radius: 50%;
-		background: #75ad50;
 	}
 	.hero {
 		max-width: 700px;
@@ -524,22 +496,9 @@
 		border-radius: 50%;
 		color: #798d2e;
 	}
-	footer {
-		display: flex;
-		justify-content: space-between;
-		margin-top: auto;
-		padding-top: 100px;
-		color: #9b9c94;
-		font-size: 9px;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
 	@media (max-width: 650px) {
 		.shell {
 			padding: 22px 18px;
-		}
-		.privacy {
-			display: none;
 		}
 		.hero {
 			margin: 48px 0 24px;
@@ -574,11 +533,6 @@
 		.preview-meta {
 			gap: 12px;
 			flex-direction: column;
-		}
-		footer {
-			padding-top: 42px;
-			flex-direction: column;
-			gap: 8px;
 		}
 	}
 </style>
