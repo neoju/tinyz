@@ -29,9 +29,9 @@ export type ReadyImageResult = ImageResult & {
 
 export interface WebkitDocument extends Document {
 	webkitFullscreenElement?: Element | null;
-	webkitExitFullscreen?: () => Promise<void>;
+	webkitExitFullscreen?: () => void | Promise<void>;
 }
 
-export interface WebkitElement extends HTMLDivElement {
-	webkitRequestFullscreen?: () => Promise<void>;
+export interface WebkitElement extends HTMLElement {
+	webkitRequestFullscreen?: () => void | Promise<void>;
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Maximize2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-svelte';
+	import { Maximize2, Minimize2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-svelte';
 	import { useFullscreen } from '$lib/hooks/useFullscreen';
 
 	let { originalUrl, compressedUrl } = $props<{
@@ -11,6 +11,7 @@
 
 	let position = $state(50);
 	let zoom = $state(1);
+	let fallbackFullscreen = $state(false);
 	let panX = $state(0);
 	let panY = $state(0);
 	let gesture = $state<'split' | 'pan' | null>(null);
@@ -20,6 +21,7 @@
 	let pendingPointerY = 0;
 	let animationFrame: number | undefined;
 	let slider: HTMLDivElement;
+	let fullscreenButton: HTMLButtonElement;
 
 	function changeZoom(amount: number) {
 		if (!slider) return;
@@ -100,14 +102,58 @@
 		if (event.key === 'ArrowLeft') position = Math.max(0, position - 1);
 		if (event.key === 'ArrowRight') position = Math.min(100, position + 1);
 	}
+
+	function handleFullscreenKeydown(event: KeyboardEvent) {
+		if (!fallbackFullscreen) return;
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			fallbackFullscreen = false;
+			fullscreenButton?.focus();
+		} else if (event.key === 'Tab') {
+			const focusable = [...slider.querySelectorAll<HTMLElement>('button, [tabindex]:not([tabindex="-1"])')];
+			if (focusable.length === 0) return;
+			const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
+			const nextIndex = (currentIndex + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+			event.preventDefault();
+			focusable[nextIndex].focus();
+		}
+	}
+
+	async function toggleFullscreen() {
+		if (fallbackFullscreen) {
+			fallbackFullscreen = false;
+			return;
+		}
+
+		if (fullscreen.isFullscreen()) {
+			await fullscreen.exit();
+			return;
+		}
+
+		if (!(await fullscreen.request(slider))) fallbackFullscreen = true;
+	}
+
+	$effect(() => {
+		if (!fallbackFullscreen) return;
+
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		document.body.classList.add('fullscreen-fallback-open');
+
+		return () => {
+			document.body.style.overflow = previousOverflow;
+			document.body.classList.remove('fullscreen-fallback-open');
+		};
+	});
 </script>
 
-<svelte:window onpointermove={movePointer} onpointerup={endPointer} />
+	<svelte:window onpointermove={movePointer} onpointerup={endPointer} onkeydown={handleFullscreenKeydown} />
 
 <div
 	bind:this={slider}
 	class:grabbing={gesture === 'pan'}
 	class:split-grabbing={gesture === 'split'}
+	class:fullscreen-fallback={fallbackFullscreen}
 	class="slider aspect-square md:aspect-video"
 	role="application"
 	aria-label="Image comparison preview. Drag the image when zoomed to pan."
@@ -176,13 +222,18 @@
 
 	<button
 		class="fullscreen"
+		bind:this={fullscreenButton}
 		type="button"
-		aria-label="View preview fullscreen"
-		title="View fullscreen"
+		aria-label={fallbackFullscreen ? 'Exit preview fullscreen' : 'View preview fullscreen'}
+		title={fallbackFullscreen ? 'Exit fullscreen' : 'View fullscreen'}
 		onpointerdown={(event) => event.stopPropagation()}
-		onclick={() => fullscreen.toggle(slider)}
+		onclick={toggleFullscreen}
 	>
-		<Maximize2 size={16} strokeWidth={1.5} />
+		{#if fallbackFullscreen}
+			<Minimize2 size={16} strokeWidth={1.5} />
+		{:else}
+			<Maximize2 size={16} strokeWidth={1.5} />
+		{/if}
 	</button>
 </div>
 
@@ -194,6 +245,22 @@
 		background: repeating-conic-gradient(#e2e0d8 0% 25%, #ebe9e2 0% 50%) 50% / 20px 20px;
 		touch-action: none;
 		user-select: none;
+	}
+	.slider.fullscreen-fallback {
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		width: 100vw;
+		height: 100dvh;
+		max-width: none;
+		max-height: none;
+		aspect-ratio: auto;
+		overscroll-behavior: none;
+	}
+	@supports not (height: 100dvh) {
+		.slider.fullscreen-fallback {
+			height: 100vh;
+		}
 	}
 	.slider img {
 		width: 100%;

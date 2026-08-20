@@ -7,29 +7,47 @@ export function useFullscreen() {
 		return !!(document.fullscreenElement || doc.webkitFullscreenElement);
 	}
 
-	async function exit(): Promise<void> {
-		if (document.exitFullscreen) {
-			await document.exitFullscreen();
-		} else if (doc.webkitExitFullscreen) {
-			await doc.webkitExitFullscreen.call(document);
+	async function exit(): Promise<boolean> {
+		try {
+			if (document.exitFullscreen) {
+				await document.exitFullscreen();
+				return true;
+			}
+			if (doc.webkitExitFullscreen) {
+				await doc.webkitExitFullscreen.call(document);
+				return true;
+			}
+		} catch {
+			return false;
 		}
+
+		return false;
 	}
 
-	async function request(element: HTMLElement): Promise<void> {
+	async function request(element: HTMLElement): Promise<boolean> {
 		const el = element as WebkitElement;
-		if (element.requestFullscreen) {
-			await element.requestFullscreen();
-		} else if (el.webkitRequestFullscreen) {
-			await el.webkitRequestFullscreen.call(element);
+		try {
+			if (element.requestFullscreen) {
+				await element.requestFullscreen();
+				return true;
+			}
+			if (el.webkitRequestFullscreen) {
+				await el.webkitRequestFullscreen.call(element);
+				return true;
+			}
+		} catch {
+			return false;
 		}
+
+		return false;
 	}
 
-	async function toggle(element: HTMLElement): Promise<void> {
+	async function toggle(element: HTMLElement): Promise<boolean> {
 		if (isFullscreen()) {
-			await exit();
-		} else {
-			await request(element);
+			return exit();
 		}
+
+		return request(element);
 	}
 
 	return { isFullscreen, exit, request, toggle };
