@@ -126,7 +126,7 @@
 	});
 </script>
 
-	<svelte:window onpointermove={movePointer} onpointerup={endPointer} />
+<svelte:window onpointermove={movePointer} onpointerup={endPointer} />
 
 <div
 	bind:this={slider}
