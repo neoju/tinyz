@@ -27,6 +27,10 @@ const MIME_TO_FORMAT = Object.fromEntries(
 
 export const ACCEPTED_IMAGE_TYPES: string[] = Object.values(FORMATS).map((f) => f.mime);
 
+export const MAX_FILE_MB = 200;
+
+export const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+
 export function mimeType(format: OutputFormat) {
 	return FORMATS[format].mime;
 }

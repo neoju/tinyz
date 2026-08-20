@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { CircleQuestionMark, Download, Trash2 } from 'lucide-svelte';
 	import HelperText from './HelperText.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 	import type { ImageResult, OutputFormat } from '$lib/types';
 	import {
 		AlertDialog,
@@ -70,14 +71,14 @@
 	<div class="section-heading">
 		<div class="section-heading-label">
 			<div class="section-heading-title">
-				<span>02 / output queue</span>
+				<span class="font-bold">02 / output queue</span>
 				{#if helperCollapsed}
 					<Button
 						type="button"
 						variant="ghost"
-						class="border-0 hover:cursor-pointer"
+						class="border-0 bg-transparent hover:cursor-pointer"
 						size="icon-xs"
-						aria-label="Show output queue tips"
+						aria-label={m.result_tips_show()}
 						onclick={() => (helperCollapsed = false)}
 					>
 						<CircleQuestionMark size={14} />
@@ -139,10 +140,10 @@
 	<HelperText
 		bind:collapsed={helperCollapsed}
 		storageKey={helperKey}
-		ariaLabel="Output queue tips"
-		title="How to use"
-		body="Review processed files here, download a single result or the full set as ZIP, and clear the queue when you want to start over."
-		dismissLabel="Dismiss output queue tips"
+		ariaLabel={m.result_tips_title()}
+		title={m.result_tips_title()}
+		body={m.result_tips_body()}
+		dismissLabel={m.result_tips_hide()}
 	/>
 
 	<div class="list">
@@ -174,7 +175,7 @@
 			{/each}
 		</ScrollArea>
 	</div>
-	<p class="format-note">Outputs are encoded as {format.toUpperCase()}.</p>
+	<p class="format-note">{m.outputs_encoded({ format: format.toUpperCase() })}</p>
 </section>
 
 <style>
@@ -201,7 +202,6 @@
 	.section-heading-title {
 		display: flex;
 		align-items: center;
-		gap: 8px;
 		white-space: nowrap;
 	}
 	:global(.row-download svg) {

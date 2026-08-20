@@ -1,10 +1,13 @@
+<script lang="ts">
+	import { m } from '$lib/paraglide/messages.js';
+</script>
+
 <section class="hero">
-	<p class="eyebrow">WASM image compressor</p>
-	<h1>Make images lighter.<br /><em>Keep them yours.</em></h1>
-	<p class="intro">
-		Drop a batch of images. tinyz compresses them in a background thread, so your files never leave
-		this device.
-	</p>
+	<p class="eyebrow">{m.hero_eyebrow()}</p>
+	<h1>
+		{m.hero_title().split('\n')[0]}<br /><em>{m.hero_title().split('\n')[1]}</em>
+	</h1>
+	<p class="intro">{m.hero_intro()}</p>
 </section>
 
 <style>

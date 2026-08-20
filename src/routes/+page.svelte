@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import CompressorWorker from '$lib/workers/compressor.worker?worker';
+	import { m } from '$lib/paraglide/messages.js';
 
 	import Controls from '$lib/components/Controls.svelte';
 	import DropZone from '$lib/components/DropZone.svelte';
@@ -22,6 +23,8 @@
 		extensionToFormat,
 		filterAcceptedImages,
 		formatToExtension,
+		MAX_FILE_BYTES,
+		MAX_FILE_MB,
 		mimeToFormat,
 		mimeType,
 		triggerDownload
@@ -115,20 +118,31 @@
 		const accepted = filterAcceptedImages(input);
 
 		if (!accepted.length) {
-			error = 'Choose PNG, JPEG, or WebP images to begin.';
+			error = m.compression_error();
 			return;
 		}
 		error = '';
 
+		const tooLarge = accepted.filter((file) => file.size > MAX_FILE_BYTES);
+		const withinLimit = accepted.filter((file) => file.size <= MAX_FILE_BYTES);
+
+		if (!withinLimit.length) {
+			error = m.file_too_large({ limit: MAX_FILE_MB });
+			return;
+		}
+		if (tooLarge.length) {
+			error = m.file_too_large_skipped({ count: tooLarge.length });
+		}
+
 		const wasEmpty = items.length === 0;
 		if (wasEmpty) {
-			const first = accepted[0];
+			const first = withinLimit[0];
 			const ext = first.name.split('.').pop() ?? '';
 			const detected = extensionToFormat(ext) ?? mimeToFormat(first.type);
 			if (detected) format = detected;
 		}
 
-		const next = accepted.map((file, offset) => {
+		const next = withinLimit.map((file, offset) => {
 			const id = items.length + offset;
 			files.set(id, file);
 			return {
@@ -196,7 +210,7 @@
 		if (!ready.length) return;
 
 		downloadZip(ready as ReadyImageResult[]).catch((cause) => {
-			error = cause instanceof Error ? cause.message : 'Could not create ZIP archive.';
+			error = cause instanceof Error ? cause.message : m.zip_error();
 		});
 	}
 
@@ -224,6 +238,7 @@
 <main class="shell border-dashed md:border-x">
 	<Hero />
 	<DropZone {busy} onFiles={chooseFiles} />
+	{#if error}<p class="error pt-2" role="alert">{error}</p>{/if}
 
 	<Controls
 		bind:ref={controlsRef}
@@ -237,7 +252,6 @@
 		onformatchange={changeFormat}
 		onrecompress={recompressAll}
 	/>
-	{#if error}<p class="error" role="alert">{error}</p>{/if}
 
 	{#if selected}
 		<Preview item={selected} />
@@ -257,7 +271,8 @@
 		/>
 	{:else}
 		<div class="tip text-center">
-			<span>i</span> Your images are processed locally. Nothing is uploaded or stored.
+			<span>i</span>
+			{m.local_tip()}
 		</div>
 	{/if}
 </main>

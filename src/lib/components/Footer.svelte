@@ -1,10 +1,14 @@
+<script lang="ts">
+	import { m } from '$lib/paraglide/messages.js';
+</script>
+
 <footer class="flex justify-center border-t border-dashed">
 	<div
 		class="footer-content flex flex-col justify-center gap-1 border-dashed
     text-center md:flex-row md:justify-between md:border-x"
 	>
-		<span>tinyz / 2026</span>
-		<span>Powered by Rust + imagequant + WebAssembly</span>
+		<span>{m.footer_year()}</span>
+		<span>{m.footer_powered()}</span>
 	</div>
 </footer>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages.js';
 	import type { OutputFormat } from '$lib/types';
 	import { formatLabel } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -45,7 +46,7 @@
 </script>
 
 <div class="controls" bind:this={ref}>
-	<label for="quality">Quality <strong>{quality}</strong></label>
+	<label for="quality">{m.quality_label()} <strong>{quality}</strong></label>
 	<input
 		id="quality"
 		type="range"
@@ -56,13 +57,13 @@
 		oninput={handleQualityInput}
 		onchange={onqualitychange}
 	/>
-	<label for="format">Output</label>
+	<label for="format">{m.output_label()}</label>
 	<Select value={format} type="single" onValueChange={handleFormatChange}>
 		<SelectTrigger
 			id="format"
 			class="hover:cursor-pointer"
 			size="sm"
-			aria-label="Output format"
+			aria-label={m.output_format()}
 			disabled={busy}
 		>
 			<SelectValue>{formatLabel(format)}</SelectValue>
@@ -80,7 +81,7 @@
 		disabled={!settingsDirty || busy || !hasItems}
 		onclick={onrecompress}
 	>
-		<span class="hidden md:inline-block">Re-compress</span>
+		<span class="hidden md:inline-block">{m.recompress()}</span>
 		<RefreshCcw />
 	</Button>
 </div>

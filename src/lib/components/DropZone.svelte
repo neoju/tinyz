@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages.js';
+
 	let { busy, onFiles } = $props<{
 		busy: boolean;
 		onFiles: (files: FileList | File[]) => void;
@@ -40,9 +42,9 @@
 		onchange={handleFileChange}
 	/>
 	<div class="drop-icon">+</div>
-	<h2>{busy ? 'Compressing in the background...' : 'Drop images here'}</h2>
-	<p>or <span class="browse">browse your files</span></p>
-	<span class="drop-note">PNG, JPG, WEBP up to 50 MB each</span>
+	<h2>{busy ? m.dropzone_busy() : m.dropzone_idle()}</h2>
+	<p>or <span class="browse">{m.dropzone_browse()}</span></p>
+	<span class="drop-note">{m.dropzone_note()}</span>
 </label>
 
 <style>

@@ -1,15 +1,48 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale, setLocale } from '$lib/paraglide/runtime.js';
+	import {
+		Select,
+		SelectContent,
+		SelectItem,
+		SelectTrigger,
+		SelectValue
+	} from '$lib/components/ui/select/index.js';
+
+	const locale = $derived(getLocale());
+
+	function switchLocale(nextLocale: string) {
+		if (nextLocale === 'en' || nextLocale === 'vi') {
+			void setLocale(nextLocale);
+		}
+	}
 </script>
 
 <header class="flex w-full justify-center border-b border-dashed">
 	<nav class="nav border-dashed md:border-x">
-		<a class="brand" href={resolve('/')} aria-label="tinyz home">
+		<a class="brand" href={resolve('/')} aria-label={m.brand_home()}>
 			<span class="brand-mark">tz</span> tinyz
 		</a>
-		<span class="privacy">
-			<span class="status-dot"></span> local-first compression
-		</span>
+		<div class="nav-actions">
+			<span class="privacy">
+				<span class="status-dot"></span>
+				{m.brand_tagline()}
+			</span>
+			<Select value={locale} type="single" onValueChange={switchLocale}>
+				<SelectTrigger class="locale-switcher-shell" size="sm" aria-label={m.language_label()}>
+					<SelectValue>
+						<span class="text-xs">
+							{locale === 'vi' ? m.language_vi() : m.language_en()}
+						</span>
+					</SelectValue>
+				</SelectTrigger>
+				<SelectContent class="locale-menu-shell">
+					<SelectItem value="en">{m.language_en()}</SelectItem>
+					<SelectItem value="vi">{m.language_vi()}</SelectItem>
+				</SelectContent>
+			</Select>
+		</div>
 	</nav>
 </header>
 
@@ -24,6 +57,11 @@
 		font-size: 11px;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
+	}
+	.nav-actions {
+		display: flex;
+		align-items: center;
+		gap: 14px;
 	}
 	.brand {
 		color: inherit;

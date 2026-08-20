@@ -2,6 +2,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import HelperText from './HelperText.svelte';
 	import ComparisonSlider from './ComparisonSlider.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 	import type { ImageResult } from '$lib/types';
 	import { formatBytes, reductionPercent } from '$lib/utils';
 	import { CircleQuestionMark } from 'lucide-svelte';
@@ -21,14 +22,14 @@
 <section class="comparison">
 	<div class="section-heading">
 		<div class="flex items-center">
-			<span>01 / Result preview</span>
+			<span class="font-bold">01 / Result preview</span>
 			{#if helperCollapsed}
 				<Button
 					type="button"
 					variant="ghost"
-					class="border-0 hover:cursor-pointer"
+					class="border-0 bg-transparent hover:cursor-pointer"
 					size="icon-xs"
-					aria-label="Show comparison slider tips"
+					aria-label={m.preview_tips_show()}
 					onclick={() => (helperCollapsed = false)}
 				>
 					<CircleQuestionMark size={14} />
@@ -48,10 +49,10 @@
 	<HelperText
 		bind:collapsed={helperCollapsed}
 		storageKey={helperKey}
-		ariaLabel="Comparison slider tips"
-		title="How to compare"
-		body="Drag the center handle to compare, use zoom to inspect details, and fullscreen for a larger view."
-		dismissLabel="Dismiss comparison slider tips"
+		ariaLabel={m.preview_tips_title()}
+		title={m.preview_tips_title()}
+		body={m.preview_tips_body()}
+		dismissLabel={m.preview_tips_hide()}
 	/>
 
 	{#if item.compressedUrl}
