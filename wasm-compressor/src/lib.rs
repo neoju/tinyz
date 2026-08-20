@@ -1,5 +1,7 @@
 use std::io::Cursor;
 
+use exif::{In, Tag};
+use image::metadata::Orientation;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -35,14 +37,17 @@ pub fn compress_image_with_metadata(
     format: &str,
 ) -> Result<CompressionResult, JsValue> {
     let started_at = js_sys::Date::now();
-    let image = image::load_from_memory(input_bytes)
+
+    let mut image = image::load_from_memory(input_bytes)
         .map_err(|error| JsValue::from_str(&format!("failed to decode image: {error}")))?;
+    if let Some(orientation) = read_exif_orientation(input_bytes) {
+        image.apply_orientation(orientation);
+    }
     let rgba = image.to_rgba8();
     let (width, height) = rgba.dimensions();
 
-    // PNG is palette-based, so it quantizes to a limited palette. JPEG and WebP
-    // are full-color formats: encoding them from a 256-color palette destroys
-    // photographic tonal gradations, so they encode the raw RGBA directly.
+    // PNG and WebP use palette quantization to make quality affect their output.
+    // JPEG is a full-color format, so it encodes the raw RGB pixels directly.
     let bytes = match format.to_ascii_lowercase().as_str() {
         "png" => {
             let (palette, indexed_pixels) = quantize_rgba(&rgba, quality)?;
@@ -52,7 +57,17 @@ pub fn compress_image_with_metadata(
             let rgb = flatten_rgba_to_rgb(rgba.as_raw(), [255, 255, 255]);
             encode_jpeg(&rgb, width, height, quality)
         }
-        "webp" => encode_webp(rgba.as_raw(), width, height),
+        "webp" => {
+            let (palette, indexed_pixels) = quantize_webp_rgba(&rgba, quality)?;
+            let quantized_rgba = indexed_pixels
+                .into_iter()
+                .flat_map(|index| {
+                    let color = palette[index as usize];
+                    [color.r, color.g, color.b, color.a]
+                })
+                .collect::<Vec<_>>();
+            encode_webp(&quantized_rgba, width, height)
+        }
         _ => Err(JsValue::from_str("unsupported output format")),
     }?;
 
@@ -62,9 +77,37 @@ pub fn compress_image_with_metadata(
     })
 }
 
+fn read_exif_orientation(bytes: &[u8]) -> Option<Orientation> {
+    let mut reader = Cursor::new(bytes);
+    let exif_reader = exif::Reader::new();
+    let exif_data = exif_reader.read_from_container(&mut reader).ok()?;
+    let field = exif_data.get_field(Tag::Orientation, In::PRIMARY)?;
+    field
+        .value
+        .get_uint(0)
+        .and_then(|value| u8::try_from(value).ok())
+        .and_then(Orientation::from_exif)
+}
+
 fn quantize_rgba(
     rgba: &image::RgbaImage,
     quality: u8,
+) -> Result<(Vec<imagequant::RGBA>, Vec<u8>), JsValue> {
+    quantize_rgba_with_max_colors(rgba, quality, 256)
+}
+
+fn quantize_webp_rgba(
+    rgba: &image::RgbaImage,
+    quality: u8,
+) -> Result<(Vec<imagequant::RGBA>, Vec<u8>), JsValue> {
+    let max_colors = 16 + u32::from(quality) * 240 / 100;
+    quantize_rgba_with_max_colors(rgba, quality, max_colors)
+}
+
+fn quantize_rgba_with_max_colors(
+    rgba: &image::RgbaImage,
+    quality: u8,
+    max_colors: u32,
 ) -> Result<(Vec<imagequant::RGBA>, Vec<u8>), JsValue> {
     let (width, height) = rgba.dimensions();
 
@@ -73,7 +116,7 @@ fn quantize_rgba(
         .set_quality(0, quality)
         .map_err(|error| JsValue::from_str(&format!("failed to set quality: {error}")))?;
     attributes
-        .set_max_colors(256)
+        .set_max_colors(max_colors)
         .map_err(|error| JsValue::from_str(&format!("failed to configure palette: {error}")))?;
 
     let source_pixels = rgba
@@ -102,7 +145,11 @@ fn quantize_rgba(
 }
 
 fn flatten_rgba_to_rgb(rgba: &[u8], background: [u8; 3]) -> Vec<u8> {
-    let bg = [background[0] as f32, background[1] as f32, background[2] as f32];
+    let bg = [
+        background[0] as f32,
+        background[1] as f32,
+        background[2] as f32,
+    ];
     rgba.chunks_exact(4)
         .flat_map(|pixel| {
             let alpha = pixel[3] as f32 / 255.0;
@@ -164,3 +211,115 @@ fn encode_png(
     Ok(output.into_inner())
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::GenericImageView;
+
+    fn orientation_tiff(value: u16) -> Vec<u8> {
+        vec![
+            b'I',
+            b'I',
+            42,
+            0,
+            8,
+            0,
+            0,
+            0, // TIFF header and IFD offset
+            1,
+            0, // one IFD entry
+            0x12,
+            0x01, // Orientation tag
+            3,
+            0, // SHORT
+            1,
+            0,
+            0,
+            0, // one value
+            (value & 0xff) as u8,
+            (value >> 8) as u8,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0, // next IFD offset
+        ]
+    }
+
+    #[test]
+    fn reads_exif_orientation_from_tiff_short() {
+        assert_eq!(
+            read_exif_orientation(&orientation_tiff(6)),
+            Some(Orientation::Rotate90)
+        );
+    }
+
+    #[test]
+    fn maps_all_exif_orientations() {
+        let expected = [
+            Orientation::NoTransforms,
+            Orientation::FlipHorizontal,
+            Orientation::Rotate180,
+            Orientation::FlipVertical,
+            Orientation::Rotate90FlipH,
+            Orientation::Rotate90,
+            Orientation::Rotate270FlipH,
+            Orientation::Rotate270,
+        ];
+
+        for (value, orientation) in (1..=8).zip(expected) {
+            assert_eq!(Orientation::from_exif(value), Some(orientation));
+        }
+    }
+
+    #[test]
+    fn applies_rotation_to_pixels_and_dimensions() {
+        let mut image = image::DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(
+            2,
+            3,
+            image::Rgba([255, 0, 0, 255]),
+        ));
+
+        image.apply_orientation(Orientation::Rotate90);
+
+        assert_eq!(image.dimensions(), (3, 2));
+    }
+
+    #[test]
+    fn webp_quality_changes_encoded_output() {
+        let width = 128;
+        let height = 128;
+        let rgba = (0..width * height)
+            .flat_map(|index| {
+                let x = index % width;
+                let y = index / width;
+                [
+                    ((x * 17 + y * 13) % 256) as u8,
+                    ((x * 7 + y * 29) % 256) as u8,
+                    ((x * 37 + y * 3) % 256) as u8,
+                    255,
+                ]
+            })
+            .collect::<Vec<_>>();
+
+        let low_quality = quantized_webp(&rgba, width, height, 10);
+        let high_quality = quantized_webp(&rgba, width, height, 99);
+
+        assert_ne!(low_quality, high_quality);
+        assert_ne!(low_quality.len(), high_quality.len());
+    }
+
+    fn quantized_webp(rgba: &[u8], width: u32, height: u32, quality: u8) -> Vec<u8> {
+        let image = image::RgbaImage::from_raw(width, height, rgba.to_vec()).unwrap();
+        let (palette, indexed_pixels) = quantize_webp_rgba(&image, quality).unwrap();
+        let quantized_rgba = indexed_pixels
+            .into_iter()
+            .flat_map(|index| {
+                let color = palette[index as usize];
+                [color.r, color.g, color.b, color.a]
+            })
+            .collect::<Vec<_>>();
+        encode_webp(&quantized_rgba, width, height).unwrap()
+    }
+}

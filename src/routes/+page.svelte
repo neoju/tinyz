@@ -17,7 +17,15 @@
 		ReadyImageResult,
 		WorkerResponseMessage
 	} from '$lib/types';
-	import { downloadZip, extensionToFormat, filterAcceptedImages, formatToExtension, mimeType, triggerDownload } from '$lib/utils';
+	import {
+		downloadZip,
+		extensionToFormat,
+		filterAcceptedImages,
+		formatToExtension,
+		mimeToFormat,
+		mimeType,
+		triggerDownload
+	} from '$lib/utils';
 
 	let workers: Worker[] = [];
 	let nextWorker = 0;
@@ -114,8 +122,9 @@
 
 		const wasEmpty = items.length === 0;
 		if (wasEmpty) {
-			const ext = accepted[0].name.split('.').pop() ?? '';
-			const detected = extensionToFormat(ext);
+			const first = accepted[0];
+			const ext = first.name.split('.').pop() ?? '';
+			const detected = extensionToFormat(ext) ?? mimeToFormat(first.type);
 			if (detected) format = detected;
 		}
 
