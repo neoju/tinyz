@@ -26,3 +26,12 @@ export type ReadyImageResult = ImageResult & {
 	compressedUrl: string;
 	outputName: string;
 };
+
+export interface WebkitDocument extends Document {
+	webkitFullscreenElement?: Element | null;
+	webkitExitFullscreen?: () => Promise<void>;
+}
+
+export interface WebkitElement extends HTMLDivElement {
+	webkitRequestFullscreen?: () => Promise<void>;
+}

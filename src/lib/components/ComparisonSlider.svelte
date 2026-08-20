@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { Maximize2, ZoomIn, ZoomOut } from 'lucide-svelte';
+	import { useFullscreen } from '$lib/hooks/useFullscreen';
 
 	let { originalUrl, compressedUrl } = $props<{
 		originalUrl: string;
 		compressedUrl: string;
 	}>();
+
+	const fullscreen = useFullscreen();
 
 	let position = $state(50);
 	let zoom = $state(1);
@@ -17,19 +20,6 @@
 	let pendingPointerY = 0;
 	let animationFrame: number | undefined;
 	let slider: HTMLDivElement;
-
-	async function toggleFullscreen() {
-		const fullscreenElement =
-			document.fullscreenElement || (document as any).webkitFullscreenElement;
-
-		if (fullscreenElement) {
-			const exit = document.exitFullscreen || (document as any).webkitExitFullscreen;
-			await exit.call(document);
-		} else {
-			const request = slider.requestFullscreen || (slider as any).webkitRequestFullscreen;
-			await request.call(slider);
-		}
-	}
 
 	function changeZoom(amount: number) {
 		if (!slider) return;
@@ -179,7 +169,7 @@
 		aria-label="View preview fullscreen"
 		title="View fullscreen"
 		onpointerdown={(event) => event.stopPropagation()}
-		onclick={toggleFullscreen}
+		onclick={() => fullscreen.toggle(slider)}
 	>
 		<Maximize2 size={16} strokeWidth={1.5} />
 	</button>
