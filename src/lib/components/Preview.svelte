@@ -25,7 +25,7 @@
 	{#if item.compressedUrl}
 		<ComparisonSlider originalUrl={item.originalUrl} compressedUrl={item.compressedUrl} />
 	{:else}
-		<div class="waiting aspect-video w-full px-6">
+		<div class="waiting aspect-square w-full px-6 md:aspect-video">
 			<p class="w-full overflow-hidden text-center text-nowrap text-ellipsis">
 				Compressing {item.name}...
 			</p>

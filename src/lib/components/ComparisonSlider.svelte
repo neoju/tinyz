@@ -108,7 +108,7 @@
 	bind:this={slider}
 	class:grabbing={gesture === 'pan'}
 	class:split-grabbing={gesture === 'split'}
-	class="slider"
+	class="slider aspect-square md:aspect-video"
 	role="application"
 	aria-label="Image comparison preview. Drag the image when zoomed to pan."
 	style={`--split: ${position}%; --zoom: ${zoom}; --pan-x: ${panX}px; --pan-y: ${panY}px`}
@@ -190,7 +190,6 @@
 	.slider {
 		position: relative;
 		container-type: inline-size;
-		aspect-ratio: 16 / 9;
 		overflow: hidden;
 		background: repeating-conic-gradient(#e2e0d8 0% 25%, #ebe9e2 0% 50%) 50% / 20px 20px;
 		touch-action: none;
@@ -344,11 +343,6 @@
 	@media (prefers-reduced-motion: reduce) {
 		.zoom-reset > span {
 			transition: none;
-		}
-	}
-	@media (max-width: 650px) {
-		.slider {
-			aspect-ratio: 16 / 9;
 		}
 	}
 </style>
