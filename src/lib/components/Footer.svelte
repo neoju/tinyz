@@ -1,5 +1,8 @@
 <footer class="flex justify-center border-t border-dashed">
-	<div class="footer-content border-dashed md:border-x">
+	<div
+		class="footer-content flex flex-col justify-center gap-1 border-dashed
+    text-center md:flex-row md:justify-between md:border-x"
+	>
 		<span>tinyz / 2026</span>
 		<span>Powered by Rust + imagequant + WebAssembly</span>
 	</div>
@@ -15,8 +18,6 @@
 	}
 	.footer-content {
 		padding: 20px 34px;
-		display: flex;
-		justify-content: space-between;
 		max-width: 1100px;
 		width: 100%;
 	}
