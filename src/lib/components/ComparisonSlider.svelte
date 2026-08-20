@@ -98,27 +98,6 @@
 		}
 	}
 
-	function handlePositionKeydown(event: KeyboardEvent) {
-		if (event.key === 'ArrowLeft') position = Math.max(0, position - 1);
-		if (event.key === 'ArrowRight') position = Math.min(100, position + 1);
-	}
-
-	function handleFullscreenKeydown(event: KeyboardEvent) {
-		if (!fallbackFullscreen) return;
-		if (event.key === 'Escape') {
-			event.preventDefault();
-			fallbackFullscreen = false;
-			fullscreenButton?.focus();
-		} else if (event.key === 'Tab') {
-			const focusable = [...slider.querySelectorAll<HTMLElement>('button, [tabindex]:not([tabindex="-1"])')];
-			if (focusable.length === 0) return;
-			const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
-			const nextIndex = (currentIndex + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
-			event.preventDefault();
-			focusable[nextIndex].focus();
-		}
-	}
-
 	async function toggleFullscreen() {
 		if (fallbackFullscreen) {
 			fallbackFullscreen = false;
@@ -147,7 +126,7 @@
 	});
 </script>
 
-	<svelte:window onpointermove={movePointer} onpointerup={endPointer} onkeydown={handleFullscreenKeydown} />
+	<svelte:window onpointermove={movePointer} onpointerup={endPointer} />
 
 <div
 	bind:this={slider}
@@ -175,7 +154,6 @@
 		aria-valuemax="100"
 		aria-valuenow={position}
 		onpointerdown={startSplit}
-		onkeydown={handlePositionKeydown}
 	></button>
 
 	<div class="tag original">original</div>
