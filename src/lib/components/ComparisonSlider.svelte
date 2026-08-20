@@ -19,8 +19,16 @@
 	let slider: HTMLDivElement;
 
 	async function toggleFullscreen() {
-		if (document.fullscreenElement) await document.exitFullscreen();
-		else await slider.requestFullscreen();
+		const fullscreenElement =
+			document.fullscreenElement || (document as any).webkitFullscreenElement;
+
+		if (fullscreenElement) {
+			const exit = document.exitFullscreen || (document as any).webkitExitFullscreen;
+			await exit.call(document);
+		} else {
+			const request = slider.requestFullscreen || (slider as any).webkitRequestFullscreen;
+			await request.call(slider);
+		}
 	}
 
 	function changeZoom(amount: number) {
