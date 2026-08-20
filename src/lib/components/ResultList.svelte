@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { CircleQuestionMark, Download, Trash2, X } from 'lucide-svelte';
+	import { CircleQuestionMark, Download, Trash2 } from 'lucide-svelte';
+	import HelperText from './HelperText.svelte';
 	import type { ImageResult, OutputFormat } from '$lib/types';
 	import {
 		AlertDialog,
@@ -64,20 +64,6 @@
 			onSelect(id);
 		}
 	}
-
-	function dismissHelper() {
-		helperCollapsed = true;
-		localStorage.setItem(helperKey, '1');
-	}
-
-	function openHelper() {
-		helperCollapsed = false;
-		localStorage.removeItem(helperKey);
-	}
-
-	onMount(() => {
-		helperCollapsed = localStorage.getItem(helperKey) === '1';
-	});
 </script>
 
 <section class="results">
@@ -92,7 +78,7 @@
 						class="border-0 hover:cursor-pointer"
 						size="icon-xs"
 						aria-label="Show output queue tips"
-						onclick={openHelper}
+						onclick={() => (helperCollapsed = false)}
 					>
 						<CircleQuestionMark size={14} />
 					</Button>
@@ -150,27 +136,14 @@
 		</div>
 	</div>
 
-	{#if !helperCollapsed}
-		<div class="helper-banner" aria-label="Output queue tips">
-			<div class="helper-copy">
-				<p class="helper-title">How to use the queue</p>
-				<p>
-					Review processed files here, download a single result or the full set as ZIP, and clear
-					the queue when you want to start over.
-				</p>
-			</div>
-			<Button
-				type="button"
-				size="icon-xs"
-				variant="ghost"
-				class="size-5 hover:cursor-pointer"
-				aria-label="Dismiss output queue tips"
-				onclick={dismissHelper}
-			>
-				<X size={14} />
-			</Button>
-		</div>
-	{/if}
+	<HelperText
+		bind:collapsed={helperCollapsed}
+		storageKey={helperKey}
+		ariaLabel="Output queue tips"
+		title="How to use"
+		body="Review processed files here, download a single result or the full set as ZIP, and clear the queue when you want to start over."
+		dismissLabel="Dismiss output queue tips"
+	/>
 
 	<div class="list">
 		<ScrollArea class="list-scroll">
@@ -244,35 +217,6 @@
 		color: #798d2e;
 		font-size: 9px;
 		letter-spacing: 0.05em;
-	}
-	.helper-banner {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 12px;
-		align-items: start;
-		margin-top: 12px;
-		padding: 12px 12px 12px 14px;
-		border: 1px solid #d4d3ca;
-		background: rgba(251, 250, 247, 0.92);
-		color: #1c1d1b;
-	}
-	.helper-copy {
-		display: grid;
-		gap: 4px;
-	}
-	.helper-title {
-		margin: 0;
-		color: #798d2e;
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-	}
-	.helper-copy p:last-child {
-		margin: 0;
-		color: #7b7e76;
-		font-size: 12px;
-		line-height: 1.5;
 	}
 	.list {
 		margin-top: 15px;
