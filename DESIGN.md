@@ -79,6 +79,7 @@ All spacing derives from a 4px grid.
 - Content stays centered within the app shell and compresses down to a single readable column on small screens.
 - Comparison content owns the wide surface; controls and metadata remain compact and aligned to the right when space allows.
 - The comparison helper lives below the section header as a short dismissible banner; when closed, a compact question-mark button appears beside the header to reopen it. The dismissed state persists in local storage.
+- The output queue helper mirrors that pattern: a short dismissible banner below the section header, with a small reopen control beside the heading when collapsed. The dismissed state persists in local storage.
 
 ### Rules
 
@@ -116,6 +117,15 @@ All spacing derives from a 4px grid.
 
 ### Helper Banner
 - **Structure**: short dismissible note below the section header with body copy and an X button, plus a question-mark reopen control beside the header when collapsed
+- **Variants**: expanded, dismissed
+- **Spacing**: 12px gap below the section header, 12px padding inside the banner, compact 8px gap for the header reopen control
+- **States**: visible, dismissed, hover, focus
+- **Accessibility**: readable inline text, reachable dismiss/reopen buttons, persistence of dismissed state across visits
+- **Motion**: no motion required beyond normal button feedback
+- **Layout**: full-width inline callout with inline header action
+
+### Output Queue Helper
+- **Structure**: short dismissible note below the queue header with body copy and an X button, plus a compact reopen control beside the heading when collapsed
 - **Variants**: expanded, dismissed
 - **Spacing**: 12px gap below the section header, 12px padding inside the banner, compact 8px gap for the header reopen control
 - **States**: visible, dismissed, hover, focus

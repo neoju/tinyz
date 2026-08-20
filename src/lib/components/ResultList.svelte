@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Download, Trash2 } from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { CircleQuestionMark, Download, Trash2, X } from 'lucide-svelte';
 	import type { ImageResult, OutputFormat } from '$lib/types';
 	import {
 		AlertDialog,
@@ -38,6 +39,10 @@
 		onClear: () => void;
 	}>();
 
+	let helperCollapsed = $state(false);
+
+	const helperKey = 'tinyz-output-queue-helper-dismissed';
+
 	function getStatusText(item: ImageResult): string {
 		if (item.status !== 'done' || item.compressedBytes === undefined) {
 			return item.status;
@@ -59,16 +64,45 @@
 			onSelect(id);
 		}
 	}
+
+	function dismissHelper() {
+		helperCollapsed = true;
+		localStorage.setItem(helperKey, '1');
+	}
+
+	function openHelper() {
+		helperCollapsed = false;
+		localStorage.removeItem(helperKey);
+	}
+
+	onMount(() => {
+		helperCollapsed = localStorage.getItem(helperKey) === '1';
+	});
 </script>
 
 <section class="results">
 	<div class="section-heading">
-		<span>
-			02 / output queue
+		<div class="section-heading-label">
+			<div class="section-heading-title">
+				<span>02 / output queue</span>
+				{#if helperCollapsed}
+					<Button
+						type="button"
+						variant="ghost"
+						class="border-0 hover:cursor-pointer"
+						size="icon-xs"
+						aria-label="Show output queue tips"
+						onclick={openHelper}
+					>
+						<CircleQuestionMark size={14} />
+					</Button>
+				{/if}
+			</div>
+
 			{#if bulkTimeMs}
 				<small>{formatMilliseconds(bulkTimeMs)} total</small>
 			{/if}
-		</span>
+		</div>
 
 		<div class="actions">
 			<AlertDialog>
@@ -115,6 +149,28 @@
 			</Button>
 		</div>
 	</div>
+
+	{#if !helperCollapsed}
+		<div class="helper-banner" aria-label="Output queue tips">
+			<div class="helper-copy">
+				<p class="helper-title">How to use the queue</p>
+				<p>
+					Review processed files here, download a single result or the full set as ZIP, and clear
+					the queue when you want to start over.
+				</p>
+			</div>
+			<Button
+				type="button"
+				size="icon-xs"
+				variant="ghost"
+				class="size-5 hover:cursor-pointer"
+				aria-label="Dismiss output queue tips"
+				onclick={dismissHelper}
+			>
+				<X size={14} />
+			</Button>
+		</div>
+	{/if}
 
 	<div class="list">
 		<ScrollArea class="list-scroll">
@@ -165,6 +221,16 @@
 		display: flex;
 		gap: 8px;
 	}
+	.section-heading-label {
+		display: grid;
+		gap: 4px;
+	}
+	.section-heading-title {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		white-space: nowrap;
+	}
 	:global(.row-download svg) {
 		width: 14px;
 		height: 14px;
@@ -175,10 +241,38 @@
 		stroke-width: 1.5;
 	}
 	.section-heading small {
-		margin-left: 10px;
 		color: #798d2e;
 		font-size: 9px;
 		letter-spacing: 0.05em;
+	}
+	.helper-banner {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 12px;
+		align-items: start;
+		margin-top: 12px;
+		padding: 12px 12px 12px 14px;
+		border: 1px solid #d4d3ca;
+		background: rgba(251, 250, 247, 0.92);
+		color: #1c1d1b;
+	}
+	.helper-copy {
+		display: grid;
+		gap: 4px;
+	}
+	.helper-title {
+		margin: 0;
+		color: #798d2e;
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+	}
+	.helper-copy p:last-child {
+		margin: 0;
+		color: #7b7e76;
+		font-size: 12px;
+		line-height: 1.5;
 	}
 	.list {
 		margin-top: 15px;
@@ -260,9 +354,6 @@
 			font-size: 11px;
 			gap: 8px;
 			flex-wrap: wrap;
-		}
-		.section-heading > span:first-child {
-			white-space: nowrap;
 		}
 		.section-heading small {
 			margin-left: 5px;
