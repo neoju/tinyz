@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Maximize2, ZoomIn, ZoomOut } from 'lucide-svelte';
+	import { Maximize2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-svelte';
 	import { useFullscreen } from '$lib/hooks/useFullscreen';
 
 	let { originalUrl, compressedUrl } = $props<{
@@ -150,7 +150,18 @@
 			<ZoomOut size={15} strokeWidth={1.5} />
 		</button>
 
-		<span>{Math.round(zoom * 100)}%</span>
+		<button
+			class="zoom-reset"
+			type="button"
+			aria-label="Reset zoom to 100%"
+			title="Reset zoom to 100%"
+			onclick={() => changeZoom(1 - zoom)}
+		>
+			<span class="zoom-value">{Math.round(zoom * 100)}%</span>
+			<span class="zoom-reset-icon" aria-hidden="true">
+				<RotateCcw size={14} strokeWidth={1.5} />
+			</span>
+		</button>
 
 		<button
 			type="button"
@@ -304,9 +315,36 @@
 		color: #777a72;
 		cursor: default;
 	}
-	.view-controls span {
-		min-width: 34px;
-		text-align: center;
+	.view-controls .zoom-reset {
+		width: 34px;
+		overflow: hidden;
+	}
+	.zoom-reset > span {
+		grid-area: 1 / 1;
+		transition:
+			opacity 120ms ease,
+			transform 120ms ease;
+	}
+	.zoom-reset-icon {
+		display: grid;
+		place-items: center;
+		opacity: 0;
+		transform: scale(0.75);
+	}
+	.zoom-reset:hover .zoom-value,
+	.zoom-reset:focus-visible .zoom-value {
+		opacity: 0;
+		transform: scale(0.85);
+	}
+	.zoom-reset:hover .zoom-reset-icon,
+	.zoom-reset:focus-visible .zoom-reset-icon {
+		opacity: 1;
+		transform: scale(1);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.zoom-reset > span {
+			transition: none;
+		}
 	}
 	@media (max-width: 650px) {
 		.slider {
